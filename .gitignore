@@ -1,0 +1,8 @@
+.env
+instance/*
+!instance/.gitkeep
+*.sqlite3
+__pycache__/
+.pytest_cache/
+backups/
+zap_data/
