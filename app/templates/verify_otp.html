@@ -1,0 +1,88 @@
+{% extends "auth_base.html" %}
+
+{% block content %}
+<section class="bg-gray-900 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md bg-white rounded-xl shadow-xl px-8 py-10">
+
+    <!-- Title -->
+    <h2 class="text-2xl font-bold text-center text-gray-900 mb-2">OTP Verification</h2>
+    <p class="text-center text-sm text-gray-600 mb-6">
+      One Time Password (OTP) has been sent via email to<br>
+      <strong>{{ email }}</strong><br>
+      Enter the OTP below to verify it.
+    </p>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 text-sm text-white px-4 py-2 rounded {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- OTP Form -->
+    <form method="POST" action="{{ url_for('main.verify_otp_route') }}" id="otp-form" class="space-y-5">
+      {{ form.hidden_tag() }}  <!-- CSRF protection -->
+
+      <!-- Hidden combined input -->
+      <input type="hidden" name="otp_code" id="otp_code_combined">
+
+      <!-- OTP Code Boxes -->
+      <div class="flex justify-between gap-2 otp-inputs">
+        {% for i in range(6) %}
+        <input maxlength="1" required type="text" pattern="\d*" inputmode="numeric"
+               class="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black" />
+        {% endfor %}
+      </div>
+
+      <!-- Resend / Submit -->
+      <div class="text-right text-xs text-gray-500 mt-2">
+        Resend OTP in <span id="otp-timer">00:10</span>
+      </div>
+
+      <button type="submit"
+              class="w-full text-white bg-black hover:bg-gray-800 font-semibold rounded-full text-sm px-5 py-2.5">
+        Verify OTP
+      </button>
+    </form>
+
+    <!-- Back to login -->
+    <p class="mt-4 text-xs text-center text-gray-500">
+      Didn't receive the code? <a href="{{ url_for('main.login') }}" class="text-blue-500 underline">Back to Login</a>
+    </p>
+  </div>
+</section>
+
+<!-- Script to combine OTP input boxes into hidden field -->
+<script>
+  const otpForm = document.getElementById('otp-form');
+  const inputs = document.querySelectorAll('.otp-inputs input');
+  const hiddenInput = document.getElementById('otp_code_combined');
+
+  inputs.forEach((input, i) => {
+    input.addEventListener('input', () => {
+      if (input.value.length === 1 && i < inputs.length - 1) {
+        inputs[i + 1].focus();
+      }
+    });
+  });
+
+  otpForm.addEventListener('submit', function () {
+    let otp = '';
+    inputs.forEach(input => otp += input.value);
+    hiddenInput.value = otp;
+  });
+
+  let timeLeft = 10;
+  const timer = document.getElementById('otp-timer');
+  const countdown = setInterval(() => {
+    timeLeft--;
+    timer.textContent = `00:${timeLeft.toString().padStart(2, '0')}`;
+    if (timeLeft <= 0) clearInterval(countdown);
+  }, 1000);
+</script>
+{% endblock %}
+

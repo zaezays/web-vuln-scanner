@@ -1,6 +1,7 @@
+import json
+from . import db
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from . import db
 from datetime import datetime
 
 class Company(db.Model):
@@ -14,12 +15,31 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    role = db.Column(db.String(10), nullable=False)
+    role = db.Column(db.String(10), nullable=False)  # 'admin' or 'user'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # New fields
+    otp_secret = db.Column(db.String(64), nullable=True)
+    trusted_devices = db.Column(db.Text, nullable=True)  # Store as JSON
+    profile_picture = db.Column(db.String(255), nullable=True)
+
+
+    # Relationships
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=True)
     scans = db.relationship('Scan', backref='user', lazy=True)
     notifications = db.relationship('Notification', backref='recipient', lazy=True)
     logs = db.relationship('UserLog', backref='user', lazy=True)
+
+    def get_trusted_devices(self):
+        if self.trusted_devices:
+            return json.loads(self.trusted_devices)
+        return []
+
+    def add_trusted_device(self, device_token):
+        devices = self.get_trusted_devices()
+        if device_token not in devices:
+            devices.append(device_token)
+            self.trusted_devices = json.dumps(devices)
 
 class Scan(db.Model):
     id = db.Column(db.Integer, primary_key=True)

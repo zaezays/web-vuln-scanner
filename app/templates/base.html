@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VulnScanner</title>
+
+  <!-- Tailwind CSS + Flowbite (via CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 z-50 w-full bg-gray-800 border-b border-gray-700">
+    <div class="px-4 py-3 flex justify-between items-center">
+      <!-- Left: Brand + Sidebar toggle -->
+      <div class="flex items-center gap-3">
+        <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" type="button"
+                class="sm:hidden text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-600">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                  d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
+                  clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <a href="#" class="text-white font-bold text-xl">VulnScanner</a>
+      </div>
+
+      <!-- Right: Placeholder for future profile dropdown -->
+      <div class="flex items-center">
+        {% if current_user.is_authenticated %}
+        <span class="text-white mr-4">Hi, {{ current_user.username }}</span>
+        {% endif %}
+        <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  {% include 'sidebar.html' %}
+
+  <!-- Main content area -->
+  <div class="p-4 sm:ml-64">
+    <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="p-3 mb-3 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Page-specific content -->
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <!-- Flowbite JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+</body>
+</html>
