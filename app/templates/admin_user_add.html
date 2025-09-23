@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg mt-10 text-gray-100">
+  <h2 class="text-2xl font-semibold mb-6">+ Add New User</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <!-- Username -->
+    <div class="mb-4">
+      {{ form.username.label(class="block text-sm text-gray-300 mb-1") }}
+      {{ form.username(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {% for error in form.username.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Email -->
+    <div class="mb-4">
+      {{ form.email.label(class="block text-sm text-gray-300 mb-1") }}
+      {{ form.email(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {% for error in form.email.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Password -->
+    <div class="mb-4">
+      {{ form.password.label(class="block text-sm text-gray-300 mb-1") }}
+      {{ form.password(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {% for error in form.password.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="mb-4">
+      {{ form.confirm_password.label(class="block text-sm text-gray-300 mb-1") }}
+      {{ form.confirm_password(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {% for error in form.confirm_password.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Role -->
+    <div class="mb-4">
+      {{ form.role.label(class="block text-sm text-gray-300 mb-1") }}
+      {{ form.role(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {% for error in form.role.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Company Name -->
+    <div class="mb-4">
+      {{ form.company_name.label(class="block text-sm text-gray-300 mb-1") }}
+      {{ form.company_name(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {% for error in form.company_name.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Is Active -->
+    <div class="mb-4 flex items-center">
+      <input type="checkbox"
+             id="{{ form.is_active.id }}"
+             name="{{ form.is_active.name }}"
+             class="form-checkbox h-5 w-5 text-blue-600"
+             {% if form.is_active.data %}checked{% endif %}>
+      <label for="{{ form.is_active.id }}" class="ml-2 text-sm text-gray-300">
+        {{ form.is_active.label.text }}
+      </label>
+    </div>
+
+    <!-- Profile Picture -->
+    <div class="mb-4">
+      {{ form.profile_picture.label(class="block text-sm text-gray-300 mb-1") }}
+      {{ form.profile_picture(class="w-full text-sm text-white bg-gray-700 border border-gray-600 rounded-md cursor-pointer") }}
+      {% for error in form.profile_picture.errors %}
+        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-end space-x-3 mt-6">
+      <a href="{{ url_for('main.user_management') }}"
+         class="px-4 py-2 bg-gray-600 rounded text-white hover:bg-gray-500">Cancel</a>
+      {{ form.submit(class="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700") }}
+    </div>
+  </form>
+</div>
+{% endblock %}
+

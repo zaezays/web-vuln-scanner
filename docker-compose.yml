@@ -18,6 +18,8 @@ services:
       - ZAP_PROXY=http://zap-daemon:8080
     ports:
       - "5001:5001"
+    volumes:
+      - ./instance:/app/instance
     depends_on:
       - zap-daemon
 

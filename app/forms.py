@@ -1,15 +1,19 @@
 # app/forms.py
+
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from flask_wtf.file import FileField, FileAllowed
-from wtforms.validators import DataRequired, Email, Length, URL
-from config import ALLOWED_EXTENSIONS
+from wtforms import (
+    StringField, PasswordField, SubmitField, SelectField,
+    BooleanField, FileField
+)
+from flask_wtf.file import FileAllowed
+from wtforms.validators import DataRequired, Email, Length, URL, EqualTo, Optional
+
+ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     submit = SubmitField('Login')
-
 
 class OTPForm(FlaskForm):
     otp_code = StringField('OTP Code', validators=[DataRequired(), Length(min=6, max=6)])
@@ -17,8 +21,34 @@ class OTPForm(FlaskForm):
 
 class ScanForm(FlaskForm):
     url = StringField('URL', validators=[DataRequired(), URL()])
-    
+
 class ProfileForm(FlaskForm):
-    picture = FileField('Profile Picture', validators=[FileAllowed(ALLOWED_EXTENSIONS, 'Images only!')])
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=150)])
-    submit = SubmitField('Save')
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=150)])
+    picture = FileField('Profile Picture', validators=[
+        FileAllowed(ALLOWED_EXTENSIONS, 'Images only!')
+    ])
+    submit = SubmitField('Update Profile')
+
+class AddUserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=150)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    role = SelectField('Role', choices=[('admin','Admin'),('user','User')], validators=[DataRequired()])
+    company_name = StringField('Company Name', validators=[Optional(), Length(max=255)])
+    is_active = BooleanField('Active')  # <-- This
+    profile_picture = FileField('Profile Picture', validators=[
+        FileAllowed(ALLOWED_EXTENSIONS, 'Images only!')
+    ])
+    submit = SubmitField('Create User')
+
+class AdminEditUserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=150)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('New Password', validators=[Optional(), Length(min=6)])
+    confirm_password = PasswordField('Confirm Password', validators=[Optional()])
+    company_name = StringField('Company Name', validators=[Optional(), Length(max=255)])
+    is_active = BooleanField('Active')
+    submit = SubmitField('Save Changes')
+
+

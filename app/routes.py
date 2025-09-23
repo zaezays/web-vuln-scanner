@@ -13,50 +13,56 @@ from utils.auth_roles import admin_required
 from flask_mail import Message
 from app import mail
 from . import db
-from .models import User, Scan, Vulnerability, Company
+from .models import User, Scan, Vulnerability, Company, Notification
 from .scanner import run_zap_scan
-from app.forms import LoginForm, OTPForm, ScanForm, ProfileForm
+from app.forms import LoginForm, OTPForm, ScanForm, ProfileForm, AddUserForm, AdminEditUserForm
 from sqlalchemy import or_
-
-# Allowed extensions for image upload
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 main = Blueprint('main', __name__)
 
+ALLOWED_PICTURE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# -----------------------
-# Home Route
-# -----------------------
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_PICTURE_EXTENSIONS
+
+
 @main.route('/')
 def root():
     return redirect(url_for('main.login'))
 
 
-# -----------------------
-# Login & Authentication
-# -----------------------
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        email = request.form.get('email')
-        password = request.form.get('password')
+        email = form.email.data.strip()
+        password = form.password.data
         user = User.query.filter_by(email=email).first()
 
         if not user or not check_password_hash(user.password_hash, password):
             flash('Invalid email or password.', 'danger')
-            return redirect(url_for('main.login'))
+            return render_template('login.html', form=form)
 
-        if not getattr(user, 'otp_secret', None):
+        if not user.is_active:
+            flash('Account inactive. Please contact admin.', 'warning')
+            return render_template('login.html', form=form)
+
+        if not user.otp_secret:
             user.otp_secret = generate_otp_secret()
             db.session.commit()
 
-        otp_code = generate_otp_code(user.otp_secret)
+        otp = generate_otp_code(user.otp_secret)
         session['otp_user_email'] = email
 
         msg = Message('Your OTP Code', recipients=[user.email])
-        msg.body = f'Your OTP code is: {otp_code}. It is valid for 5 minutes.'
-        mail.send(msg)
+        msg.body = f'Your OTP code is: {otp}. It is valid for 5 minutes.'
+        try:
+            mail.send(msg)
+        except Exception as e:
+            current_app.logger.error(f"Error sending OTP: {e}")
+            flash('Error sending OTP. Please try again.', 'danger')
+            return render_template('login.html', form=form)
 
         flash('OTP sent to your email. Please verify.', 'info')
         return redirect(url_for('main.verify_otp_route'))
@@ -70,7 +76,7 @@ def verify_otp_route():
     email = session.get('otp_user_email')
 
     if not email:
-        flash("Session expired. Please log in again.", "warning")
+        flash("Session expired. Please login again.", "warning")
         return redirect(url_for('main.login'))
 
     user = User.query.filter_by(email=email).first()
@@ -78,30 +84,23 @@ def verify_otp_route():
         flash("User not found.", "danger")
         return redirect(url_for('main.login'))
 
+    if not user.is_active:
+        flash("Account inactive. Please contact admin.", "warning")
+        return redirect(url_for('main.login'))
+
     if form.validate_on_submit():
-        otp_input = form.otp_code.data
+        otp_input = form.otp_code.data.strip()
         if verify_otp(user.otp_secret, otp_input):
             login_user(user)
+            session.pop('otp_user_email', None)
             flash("Login successful!", "success")
             return redirect(url_for('main.dashboard'))
         else:
-            flash("Invalid OTP.", "danger")
+            flash("Invalid OTP code.", "danger")
 
-    return render_template('verify_otp.html', form=form)
-
-
-# -----------------------
-# Dashboard
-# -----------------------
-@main.route('/dashboard')
-@login_required
-def dashboard():
-    return render_template('dashboard.html', user=current_user)
+    return render_template('verify_otp.html', form=form, email=email)
 
 
-# -----------------------
-# Logout
-# -----------------------
 @main.route('/logout')
 @login_required
 def logout():
@@ -110,18 +109,20 @@ def logout():
     return redirect(url_for('main.login'))
 
 
-# -----------------------
-# Scan Pages
-# -----------------------
+@main.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', user=current_user)
+
+
 @main.route('/scan', methods=['GET', 'POST'])
 @login_required
 def scan_page():
     form = ScanForm()
-
-    if request.method == 'POST':
-        target_url = request.form.get('url')
+    if form.validate_on_submit():
+        target_url = form.url.data.strip()
         if not target_url:
-            flash('URL is required.', 'danger')
+            flash("URL is required.", "danger")
             return redirect(url_for('main.scan_page'))
 
         alerts = run_zap_scan(target_url)
@@ -159,7 +160,9 @@ def scan_page():
 @main.route('/api/scan', methods=['POST'])
 @login_required
 def scan_website_api():
-    target_url = request.json.get('url')
+    data = request.get_json()
+    target_url = data.get('url') if data else None
+
     if not target_url:
         return jsonify({'error': 'No URL provided'}), 400
 
@@ -191,20 +194,13 @@ def scan_website_api():
 
     db.session.commit()
 
-    return jsonify({'message': 'Scan complete', 'scan_id': scan.id, 'vulnerabilities': alerts})
+    return jsonify({
+        'message': 'Scan complete',
+        'scan_id': scan.id,
+        'vulnerabilities': alerts
+    })
 
 
-# -----------------------
-# Registration (Placeholder)
-# -----------------------
-@main.route('/register', methods=['GET', 'POST'])
-def register():
-    return "<h2>Register route - to be implemented</h2>"
-
-
-# -----------------------
-# Admin: User Management
-# -----------------------
 @main.route('/admin/users')
 @login_required
 @admin_required
@@ -235,8 +231,8 @@ def user_management():
         companies=companies,
         selected_company_id=company_id,
         total_users=pagination.total,
-        users_start=(pagination.page - 1) * pagination.per_page + 1,
-        users_end=(pagination.page - 1) * pagination.per_page + len(users),
+        users_start=(pagination.page - 1) * per_page + 1,
+        users_end=(pagination.page - 1) * per_page + len(users),
         current_page=page,
         prev_page=pagination.prev_num if pagination.has_prev else None,
         next_page=pagination.next_num if pagination.has_next else None,
@@ -249,7 +245,41 @@ def user_management():
 @login_required
 @admin_required
 def add_user():
-    return "<h2>Add User Page (To be implemented)</h2>"
+    form = AddUserForm()
+    if form.validate_on_submit():
+        existing = User.query.filter_by(email=form.email.data.strip()).first()
+        if existing:
+            flash("Email already in use.", "danger")
+            return render_template('admin_user_add.html', form=form)
+
+        company = None
+        comp_name = form.company_name.data.strip() if form.company_name.data else None
+        if comp_name:
+            company = Company.query.filter_by(name=comp_name).first()
+            if not company:
+                company = Company(name=comp_name)
+                db.session.add(company)
+                db.session.flush()
+
+        new_user = User(
+            username=form.username.data.strip(),
+            email=form.email.data.strip(),
+            password_hash=generate_password_hash(form.password.data),
+            role=form.role.data,
+            company_id=company.id if company else None,
+            is_active=bool(form.is_active.data)
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("User created successfully.", "success")
+        return redirect(url_for('main.user_management'))
+
+    elif request.method == 'POST':
+        current_app.logger.info(f"AddUserForm errors: {form.errors}")
+
+    return render_template('admin_user_add.html', form=form)
 
 
 @main.route('/admin/users/<int:user_id>')
@@ -265,26 +295,41 @@ def view_user(user_id):
 @admin_required
 def edit_user(user_id):
     user = User.query.get_or_404(user_id)
-    form = ProfileForm()
+    form = AdminEditUserForm()
 
     if form.validate_on_submit():
-        user.username = form.username.data
+        user.username = form.username.data.strip()
+        user.email = form.email.data.strip()
 
-        pic = form.picture.data
-        if pic and allowed_file(pic.filename):
-            filename = secure_filename(pic.filename)
-            _, ext = os.path.splitext(filename)
-            pic_filename = f"user_{user.id}{ext}"
-            upload_path = os.path.join(current_app.root_path, 'static', 'uploads', pic_filename)
-            pic.save(upload_path)
-            user.profile_picture = pic_filename
+        if form.password.data:
+            if form.password.data == form.confirm_password.data:
+                user.password_hash = generate_password_hash(form.password.data)
+            else:
+                flash("Passwords do not match.", "danger")
+                return render_template('admin_user_edit.html', form=form, user=user)
+
+        comp_name = form.company_name.data.strip() if form.company_name.data else None
+        if comp_name:
+            company = Company.query.filter_by(name=comp_name).first()
+            if not company:
+                company = Company(name=comp_name)
+                db.session.add(company)
+                db.session.flush()
+            user.company_id = company.id
+        else:
+            user.company_id = None
+
+        user.is_active = form.is_active.data
 
         db.session.commit()
-        flash('User updated successfully.', 'success')
+        flash("User updated successfully.", "success")
         return redirect(url_for('main.user_management'))
 
     elif request.method == 'GET':
         form.username.data = user.username
+        form.email.data = user.email
+        form.company_name.data = user.company.name if user.company else ''
+        form.is_active.data = user.is_active
 
     return render_template('admin_user_edit.html', form=form, user=user)
 
@@ -299,41 +344,43 @@ def delete_user(user_id):
         return redirect(url_for('main.user_management'))
 
     if user.profile_picture:
-        try:
-            path = os.path.join(current_app.root_path, 'static', 'uploads', user.profile_picture)
-            if os.path.exists(path):
+        path = os.path.join(current_app.root_path, 'static', 'uploads', user.profile_picture)
+        if os.path.exists(path):
+            try:
                 os.remove(path)
-        except Exception as e:
-            current_app.logger.error(f"Error removing user picture: {e}")
+            except Exception as e:
+                current_app.logger.error(f"Error deleting picture: {e}")
 
     db.session.delete(user)
     db.session.commit()
-    flash('User deleted successfully.', 'success')
+    flash("User deleted successfully.", "success")
     return redirect(url_for('main.user_management'))
 
 
-# -----------------------
-# Profile Settings
-# -----------------------
 @main.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     form = ProfileForm()
     if form.validate_on_submit():
-        new_username = form.username.data
-        pic = form.picture.data
+        current_user.username = form.username.data.strip()
 
-        if pic and allowed_file(pic.filename):
-            filename = secure_filename(pic.filename)
+        if form.picture.data and allowed_file(form.picture.data.filename):
+            filename = secure_filename(form.picture.data.filename)
             _, ext = os.path.splitext(filename)
             pic_filename = f"user_{current_user.id}{ext}"
-            upload_path = os.path.join(current_app.root_path, 'static', 'uploads', pic_filename)
-            pic.save(upload_path)
-            current_user.profile_picture = pic_filename
+            upload_dir = os.path.join(current_app.root_path, 'static', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            full_path = os.path.join(upload_dir, pic_filename)
+            try:
+                form.picture.data.save(full_path)
+                current_user.profile_picture = pic_filename
+            except Exception as e:
+                current_app.logger.error(f"Error saving picture: {e}")
+                flash("Failed to upload picture.", "danger")
+                return redirect(url_for('main.profile'))
 
-        current_user.username = new_username
         db.session.commit()
-        flash('Profile updated successfully.', 'success')
+        flash("Profile updated successfully.", "success")
         return redirect(url_for('main.profile'))
 
     elif request.method == 'GET':
@@ -342,8 +389,15 @@ def profile():
     return render_template('profile.html', form=form, user=current_user)
 
 
-# -----------------------
-# Helpers
-# -----------------------
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+@main.route('/notifications')
+@login_required
+def notifications():
+    notifs = Notification.query.filter_by(recipient_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', notifications=notifs)
+
+
+@main.route('/settings')
+@login_required
+def settings():
+    return render_template('settings.html', user=current_user)
+

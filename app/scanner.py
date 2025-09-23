@@ -3,9 +3,9 @@ import time
 from zapv2 import ZAPv2
 
 # Load config from environment (set in docker-compose.yml)
-#ZAP_API_KEY = os.getenv("ZAP_API_KEY", "API KEY")
+#ZAP_API_KEY = os.getenv("ZAP_API_KEY", "824jqse31a5ms0fu24ji2besn4")
 #ZAP_PROXY = os.getenv("ZAP_PROXY", "http://zap:8080")
-ZAP_API_KEY = os.getenv("ZAP_API_KEY", "API KEY")
+ZAP_API_KEY = os.getenv("ZAP_API_KEY", "824jqse31a5ms0fu24ji2besn4")
 ZAP_PROXY = os.getenv("ZAP_PROXY", "http://zap-daemon:8080")
 
 

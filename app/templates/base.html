@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>VulnScanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tailwind CSS + Flowbite (via CDN) -->
   <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Favicon (Optional) -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
 
@@ -19,20 +23,62 @@
                 class="sm:hidden text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-600">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd"
-                  d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
+                  d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z"
                   clip-rule="evenodd"/>
           </svg>
         </button>
-        <a href="#" class="text-white font-bold text-xl">VulnScanner</a>
+        <a href="{{ url_for('main.dashboard') }}" class="text-white font-bold text-xl">VulnScanner</a>
       </div>
 
-      <!-- Right: Placeholder for future profile dropdown -->
-      <div class="flex items-center">
-        {% if current_user.is_authenticated %}
-        <span class="text-white mr-4">Hi, {{ current_user.username }}</span>
-        {% endif %}
-        <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
+      <!-- Right: Notification + Profile -->
+      {% if current_user.is_authenticated %}
+      <div class="flex items-center gap-4">
+        <!-- Notifications -->
+        <button type="button" id="notificationToggle"
+                class="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-600">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+          </svg>
+        </button>
+
+        <!-- Notification Dropdown -->
+        <div id="notificationDropdown" class="hidden z-50 w-80 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600 absolute top-16 right-20">
+          <div class="px-4 py-3 font-medium text-gray-900 dark:text-white">Notifications</div>
+          <ul class="max-h-64 overflow-y-auto">
+            <li class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">New scan completed successfully</li>
+            <li class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">New user registered: izzhamkl</li>
+          </ul>
+          <a href="{{ url_for('main.notifications') }}" class="block px-4 py-2 text-center text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+        </div>
+
+        <!-- Profile Dropdown Trigger -->
+        <button id="profileToggle" type="button" class="flex items-center text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-600">
+          <span class="sr-only">Open user menu</span>
+          <img class="w-8 h-8 rounded-full object-cover" 
+               src="{% if current_user.profile_picture %}
+                      {{ url_for('static', filename='uploads/' + current_user.profile_picture) }}
+                    {% else %}
+                      {{ url_for('static', filename='images/default-avatar.png') }}
+                    {% endif %}" 
+               alt="{{ current_user.username }}'s profile picture" />
+        </button>
+
+        <!-- Profile Dropdown -->
+        <div id="profileDropdown" class="hidden z-50 w-56 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600 absolute top-16 right-4">
+          <div class="px-4 py-3">
+            <span class="block text-sm font-medium text-gray-900 dark:text-white">{{ current_user.username }}</span>
+            <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ current_user.email }}</span>
+          </div>
+          <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
+            <li><a href="{{ url_for('main.profile') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My profile</a></li>
+            <li><a href="{{ url_for('main.settings') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</a></li>
+          </ul>
+          <div class="py-1">
+            <a href="{{ url_for('main.logout') }}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Logout</a>
+          </div>
+        </div>
       </div>
+      {% endif %}
     </div>
   </nav>
 
@@ -42,6 +88,7 @@
   <!-- Main content area -->
   <div class="p-4 sm:ml-64">
     <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+
       <!-- Flash messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -58,7 +105,40 @@
     </div>
   </div>
 
-  <!-- Flowbite JS -->
+  <!-- JS -->
   <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const notificationBtn = document.getElementById("notificationToggle");
+      const notificationDropdown = document.getElementById("notificationDropdown");
+
+      const profileBtn = document.getElementById("profileToggle");
+      const profileDropdown = document.getElementById("profileDropdown");
+
+      // Toggle notifications
+      notificationBtn?.addEventListener("click", () => {
+        notificationDropdown.classList.toggle("hidden");
+        profileDropdown.classList.add("hidden");
+      });
+
+      // Toggle profile dropdown
+      profileBtn?.addEventListener("click", () => {
+        profileDropdown.classList.toggle("hidden");
+        notificationDropdown.classList.add("hidden");
+      });
+
+      // Close dropdowns on outside click
+      document.addEventListener("click", (e) => {
+        if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+          notificationDropdown.classList.add("hidden");
+        }
+        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+          profileDropdown.classList.add("hidden");
+        }
+      });
+    });
+  </script>
 </body>
 </html>
+
+

@@ -4,67 +4,66 @@
 <div class="container mx-auto mt-4">
   <h2 class="text-2xl font-bold text-white mb-4">👥 User Management</h2>
 
-  <!-- Filters -->
-  <form method="GET" action="{{ url_for('main.user_management') }}" class="flex flex-col sm:flex-row gap-4 mb-4 items-start sm:items-center">
-
-    <!-- Company Filter -->
-    <select name="company_id" onchange="this.form.submit()"
-            class="w-full sm:w-64 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white">
-      <option value="">🏢 Company Filter</option>
-      {% for company in companies %}
-      <option value="{{ company.id }}" {% if company.id == selected_company_id %}selected{% endif %}>
-        {{ company.name }}
-      </option>
-      {% endfor %}
-    </select>
-
-    <!-- Add New User Button -->
+  <!-- Filter + Add button -->
+  <div class="flex flex-col sm:flex-row justify-between mb-4 items-start sm:items-center gap-4">
+    <form method="GET" action="{{ url_for('main.user_management') }}" class="flex gap-3">
+      <select name="company_id" onchange="this.form.submit()"
+              class="w-full sm:w-64 px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+        <option value="">🏢 Company Filter</option>
+        {% for company in companies %}
+        <option value="{{ company.id }}" {% if company.id == selected_company_id %}selected{% endif %}>
+          {{ company.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </form>
     <a href="{{ url_for('main.add_user') }}"
-       class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition ml-auto">
+       class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
       ➕ Add New User
     </a>
-  </form>
+  </div>
 
-  <!-- Results Info -->
+  <!-- Showing info -->
   <p class="text-sm text-gray-400 mb-2">
     Showing {{ users_start }} - {{ users_end }} of {{ total_users }} users
   </p>
 
-  <!-- Table -->
-  <div class="overflow-x-auto">
-    <table class="w-full table-auto bg-gray-900 text-white border border-gray-800 rounded-lg shadow">
-      <thead class="bg-gray-700 text-gray-200">
+  <div class="overflow-x-auto rounded-lg shadow-lg bg-gray-900 border border-gray-800">
+    <table class="min-w-full table-auto text-white">
+      <thead class="bg-gray-700">
         <tr>
-          <th class="px-4 py-2 text-left">Profile</th>
-          <th class="px-4 py-2 text-left">Email</th>
-          <th class="px-4 py-2 text-left">Company</th>
-          <th class="px-4 py-2 text-left">Role</th>
-          <th class="px-4 py-2 text-left">Status</th>
-          <th class="px-4 py-2 text-left">Created</th>
-          <th class="px-4 py-2 text-left">Actions</th>
+          <th class="px-6 py-3 text-left">Profile</th>
+          <th class="px-6 py-3 text-left">User</th>
+          <th class="px-6 py-3 text-left">Company</th>
+          <th class="px-6 py-3 text-left">Role</th>
+          <th class="px-6 py-3 text-left">Status</th>
+          <th class="px-6 py-3 text-left">Created</th>
+          <th class="px-6 py-3 text-left">Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for user in users %}
-        <tr class="border-t border-gray-800">
-          <td class="px-4 py-2 flex items-center gap-2">
+        <tr class="border-t border-gray-800 hover:bg-gray-800 transition">
+          <td class="px-6 py-4 flex items-center gap-3">
             <img src="{{ url_for('static', filename='uploads/' ~ user.profile_picture) if user.profile_picture else url_for('static', filename='default-avatar.png') }}"
-                 alt="Avatar" class="w-8 h-8 rounded-full object-cover">
-            <span>{{ user.username }}</span>
+                 alt="Avatar"
+                 class="w-10 h-10 rounded-full object-cover border border-gray-600">
           </td>
-          <td class="px-4 py-2">{{ user.email }}</td>
-          <td class="px-4 py-2">{{ user.company.name if user.company else '—' }}</td>
-          <td class="px-4 py-2 capitalize">{{ user.role }}</td>
-          <td class="px-4 py-2">
+          <td class="px-6 py-4">
+            <div class="font-semibold">{{ user.username }}</div>
+            <div class="text-sm text-gray-400">{{ user.email }}</div>
+          </td>
+          <td class="px-6 py-4">{{ user.company.name if user.company else '—' }}</td>
+          <td class="px-6 py-4 capitalize">{{ user.role }}</td>
+          <td class="px-6 py-4">
             {% if user.is_active %}
-              <span class="text-green-700 bg-green-100 px-2 py-1 rounded text-sm">Active</span>
+              <span class="text-green-600 bg-green-100 px-2 py-1 rounded text-sm">Active</span>
             {% else %}
-              <span class="text-red-700 bg-red-100 px-2 py-1 rounded text-sm">Not active</span>
+              <span class="text-red-600 bg-red-100 px-2 py-1 rounded text-sm">Not active</span>
             {% endif %}
           </td>
-          <td class="px-4 py-2">{{ user.created_at.strftime('%Y-%m-%d') }}</td>
-          <td class="px-4 py-2 flex items-center gap-3">
-
+          <td class="px-6 py-4">{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+          <td class="px-6 py-4 flex gap-4">
             <!-- Show -->
             <a href="{{ url_for('main.view_user', user_id=user.id) }}" title="View" class="text-blue-400 hover:text-blue-600">
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -88,7 +87,6 @@
                 </svg>
               </button>
             </form>
-
           </td>
         </tr>
         {% else %}
@@ -106,12 +104,10 @@
     {% for p in page_numbers %}
       {% if p %}
         {% if p == current_page %}
-        <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ p }}</span>
+          <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ p }}</span>
         {% else %}
-        <a href="{{ url_for('main.user_management', page=p, company_id=selected_company_id) }}"
-           class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white">
-          {{ p }}
-        </a>
+          <a href="{{ url_for('main.user_management', page=p, company_id=selected_company_id) }}"
+             class="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600">{{ p }}</a>
         {% endif %}
       {% else %}
         <span class="px-3 py-1 text-gray-500">…</span>
@@ -122,6 +118,9 @@
 
 </div>
 {% endblock %}
+
+
+
 
 
 

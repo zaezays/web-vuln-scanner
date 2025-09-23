@@ -17,11 +17,10 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(10), nullable=False)  # 'admin' or 'user'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # New fields
     otp_secret = db.Column(db.String(64), nullable=True)
     trusted_devices = db.Column(db.Text, nullable=True)  # Store as JSON
     profile_picture = db.Column(db.String(255), nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
 
 
     # Relationships

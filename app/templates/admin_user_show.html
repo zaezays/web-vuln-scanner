@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-6">
+  <h2 class="text-2xl font-semibold text-white mb-4">👤 User Details</h2>
+
+  <div class="bg-gray-800 text-white p-6 rounded-lg shadow-md">
+    <div class="flex items-center gap-4 mb-4">
+      <img src="{{ url_for('static', filename='uploads/' ~ user.profile_picture) if user.profile_picture else url_for('static', filename='default-avatar.png') }}"
+           alt="Profile Picture" class="w-16 h-16 rounded-full object-cover border-2 border-gray-600">
+      <div>
+        <p class="text-lg font-bold">{{ user.username }}</p>
+        <p class="text-sm text-gray-400">{{ user.email }}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <p class="text-sm text-gray-400">Company:</p>
+        <p>{{ user.company.name if user.company else "—" }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-400">Role:</p>
+        <p class="capitalize">{{ user.role }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-400">Status:</p>
+        {% if user.is_active %}
+          <span class="text-green-600 bg-green-100 px-2 py-1 rounded text-sm">Active</span>
+        {% else %}
+          <span class="text-red-600 bg-red-100 px-2 py-1 rounded text-sm">Not active</span>
+        {% endif %}
+      </div>
+      <div>
+        <p class="text-sm text-gray-400">Joined:</p>
+        <p>{{ user.created_at.strftime('%Y-%m-%d') }}</p>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <a href="{{ url_for('main.user_management') }}"
+         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+        ← Back to User List
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
