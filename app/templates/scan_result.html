@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-6 mt-10 text-white">
+
+<!-- Breadcrumb -->
+<nav class="flex items-center px-5 py-3 bg-white text-black rounded-lg mb-6 border border-gray-300 shadow-md">
+  <ol class="inline-flex items-center space-x-2">
+    <li><a href="{{ url_for('main.scan_page') }}" class="hover:text-blue-600 font-medium">Scan</a></li>
+    <li class="text-gray-500">›</li>
+    <li class="text-gray-700">Security Scan Report</li>
+    <li class="text-gray-500">›</li>
+    <li class="truncate max-w-[40ch] text-blue-600 font-medium">{{ scan.target_url }}</li>
+  </ol>
+</nav>
+
+<!-- Header -->
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-2xl font-bold text-gray-800">Security Scan Report</h2>
+
+  <div class="flex items-center space-x-3">
+    <!-- 🟦 Download PDF Button (Updated with Icon) -->
+    <a href="{{ url_for('main.export_scan_pdf', scan_id=scan.id) }}"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+      <!-- Download Report Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+           class="bi bi-file-earmark-arrow-down-fill" viewBox="0 0 16 16">
+        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1m-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0"/>
+      </svg>
+      <span>Download Report</span>
+    </a>
+
+    <!-- 🟩 NEW: Deep Scan Request Button -->
+    <a href="{{ url_for('main.deep_scan_request', scan_id=scan.id) }}"
+       class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+      <!-- Send (Deep Scan Request) Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+           class="bi bi-send-fill" viewBox="0 0 16 16">
+        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471z"/>
+      </svg>
+      <span>Deep Scan Request</span>
+    </a>
+    <!-- 🟩 END NEW BUTTON -->
+  </div>
+</div>
+
+<!-- Target -->
+<h3 class="text-lg font-semibold mb-2 text-black">
+  Target:
+  <span class="text-gray-700 break-all">{{ scan.target_url }}</span>
+</h3>
+
+
+  <!-- Top Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+    <!-- Severity Circles -->
+    <div class="flex flex-wrap items-center justify-center lg:justify-start gap-12">
+      {% set counts = {
+        'Critical': vulnerabilities | selectattr('risk_level','equalto','Critical') | list | length,
+        'High': vulnerabilities | selectattr('risk_level','equalto','High') | list | length,
+        'Medium': vulnerabilities | selectattr('risk_level','equalto','Medium') | list | length,
+        'Low': vulnerabilities | selectattr('risk_level','equalto','Low') | list | length
+      } %}
+
+      {% if counts.Critical > 0 %}
+      <div class="flex flex-col items-center">
+        <div class="relative w-[160px] h-[160px]">
+          <canvas id="chartCritical" width="160" height="160"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center text-orange-400 font-semibold text-lg">Critical</div>
+        </div>
+        <p class="mt-2 text-sm text-orange-400">{{ counts.Critical }} found</p>
+      </div>
+      {% endif %}
+
+      {% if counts.High > 0 %}
+      <div class="flex flex-col items-center">
+        <div class="relative w-[160px] h-[160px]">
+          <canvas id="chartHigh" width="160" height="160"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center text-red-400 font-semibold text-lg">High</div>
+        </div>
+        <p class="mt-2 text-sm text-red-400">{{ counts.High }} found</p>
+      </div>
+      {% endif %}
+
+      {% if counts.Medium > 0 %}
+      <div class="flex flex-col items-center">
+        <div class="relative w-[160px] h-[160px]">
+          <canvas id="chartMedium" width="160" height="160"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center text-yellow-400 font-semibold text-lg">Medium</div>
+        </div>
+        <p class="mt-2 text-sm text-yellow-400">{{ counts.Medium }} found</p>
+      </div>
+      {% endif %}
+
+      {% if counts.Low > 0 %}
+      <div class="flex flex-col items-center">
+        <div class="relative w-[160px] h-[160px]">
+          <canvas id="chartLow" width="160" height="160"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center text-green-400 font-semibold text-lg">Low</div>
+        </div>
+        <p class="mt-2 text-sm text-green-400">{{ counts.Low }} found</p>
+      </div>
+      {% endif %}
+    </div>
+
+  <!-- Information Table -->
+<div class="bg-white border border-gray-300 rounded-xl p-5 shadow-md">
+  <h3 class="font-semibold mb-3 text-black">Information</h3>
+  <table class="w-full text-sm text-black">
+    <tbody class="divide-y divide-gray-200">
+      <tr><td class="py-1 font-medium text-gray-700 w-1/3">Target</td><td class="py-1 break-all">{{ scan.target_url }}</td></tr>
+      <tr><td class="py-1 font-medium text-gray-700">Scan Time</td><td class="py-1">{{ scan.started_at or '—' }}</td></tr>
+      <tr><td class="py-1 font-medium text-gray-700">Scan Duration</td>
+        <td class="py-1">{% if scan.started_at and scan.completed_at %}{{ (scan.completed_at - scan.started_at) }}{% else %}—{% endif %}</td></tr>
+      <tr><td class="py-1 font-medium text-gray-700">Total Requests</td><td class="py-1">{{ vulnerabilities|length }}</td></tr>
+      <tr><td class="py-1 font-medium text-gray-700">Detected Pages</td>
+        <td class="py-1">{{ vulnerabilities|map(attribute='url')|select|unique|list|length }}</td></tr>
+      <tr><td class="py-1 font-medium text-gray-700">Avg Response Time</td>
+      <td class="py-1">
+        {% if avg_response_time %}{{ "%.2f" | format(avg_response_time) }} ms{% else %}—{% endif %}
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<!-- Summary Row -->
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white border border-gray-300 rounded-lg p-4 text-center shadow-md">
+    <p class="text-gray-600 text-sm">Scan Duration</p>
+    <p class="text-xl font-semibold text-black">{% if scan.started_at and scan.completed_at %}{{ (scan.completed_at - scan.started_at) }}{% else %}—{% endif %}</p>
+  </div>
+  <div class="bg-white border border-gray-300 rounded-lg p-4 text-center shadow-md">
+    <p class="text-gray-600 text-sm">Requests</p>
+    <p class="text-xl font-semibold text-black">{{ vulnerabilities|length }}</p>
+  </div>
+  <div class="bg-white border border-gray-300 rounded-lg p-4 text-center shadow-md">
+    <p class="text-gray-600 text-sm">Avg. Response Time</p>
+    <p class="text-xl font-semibold text-black">
+      {% if avg_response_time %}{{ "%.2f" | format(avg_response_time) }} ms{% else %}—{% endif %}
+    </p>
+  </div>
+  <div class="bg-white border border-gray-300 rounded-lg p-4 text-center shadow-md">
+    <p class="text-gray-600 text-sm">Locations</p>
+    <p class="text-xl font-semibold text-black">{{ vulnerabilities|map(attribute='url')|select|unique|list|length }}</p>
+  </div>
+</div>
+
+
+  <!-- Vulnerability Table Header -->
+<div class="bg-white border border-gray-300 rounded-t-lg px-5 py-3 grid grid-cols-12 text-sm font-semibold shadow-md">
+  <div class="col-span-6 text-gray-800">Vulnerability</div>
+  <div class="col-span-2 text-gray-800">Risk</div>
+  <div class="col-span-2 text-gray-800">Confidence</div>
+  <div class="col-span-2 text-gray-800">Classification</div>
+</div>
+
+<!-- Vulnerability List -->
+<div class="divide-y divide-gray-200 border border-gray-300 border-t-0 rounded-b-lg shadow-md bg-white">
+  {% for v in vulnerabilities %}
+    {% set row_id = 'vuln-' ~ loop.index %}
+    <div class="grid grid-cols-12 px-5 py-3 items-start">
+      <div class="col-span-6 flex items-start gap-2">
+        <!-- 🟩 DO NOT TOUCH THIS BUTTON LOGIC -->
+        <button type="button" class="toggle-btn mt-1 h-6 w-6 shrink-0 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center"
+                data-target="{{ row_id }}" aria-expanded="false">
+          <span class="icon-plus text-black font-bold">+</span>
+          <span class="icon-minus hidden text-black font-bold">−</span>
+        </button>
+        <div>
+          <p class="font-semibold text-gray-900">{{ v.title or v.vuln_type }}</p>
+          {% if v.url %}<p class="text-xs text-gray-500 break-all">{{ v.url }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="col-span-2">
+        {% if v.risk_level == 'Critical' %}
+          <span class="px-2 py-1 rounded-full text-xs bg-orange-500 text-white">Critical</span>
+        {% elif v.risk_level == 'High' %}
+          <span class="px-2 py-1 rounded-full text-xs bg-red-500 text-white">High</span>
+        {% elif v.risk_level == 'Medium' %}
+          <span class="px-2 py-1 rounded-full text-xs bg-yellow-300 text-black">Medium</span>
+        {% elif v.risk_level == 'Low' %}
+          <span class="px-2 py-1 rounded-full text-xs bg-green-500 text-white">Low</span>
+        {% elif v.risk_level == 'Informational' %}
+          <span class="px-2 py-1 rounded-full text-xs bg-blue-500 text-white">Informational</span>
+        {% else %}
+          <span class="text-gray-500">—</span>
+        {% endif %}
+      </div>
+
+      <div class="col-span-2 text-sm text-gray-700">{{ v.confidence or '—' }}</div>
+      <div class="col-span-2 text-sm text-gray-700">{% if v.cweid %}CWE-{{ v.cweid }}{% else %}—{% endif %}</div>
+
+      <!-- Expand Section -->
+      <div id="{{ row_id }}" class="col-span-12 hidden mt-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          <!-- Description + Recommendation -->
+          <div class="lg:col-span-2 space-y-4">
+            <section class="bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
+              <h4 class="font-semibold mb-2 text-gray-900">Description</h4>
+              <p class="text-gray-700 whitespace-pre-line">{{ v.description or 'No description available.' }}</p>
+            </section>
+
+            <section class="bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
+              <h4 class="font-semibold mb-2 text-gray-900">Recommendation / Solution</h4>
+              {% set rec_lines = (v.recommendation or 'No recommendation provided.').split('\n') %}
+              <ol class="list-decimal list-inside text-gray-700 space-y-1">
+                {% for line in rec_lines if line.strip() %}
+                  <li>{{ line.strip() }}</li>
+                {% endfor %}
+              </ol>
+            </section>
+
+            {% if v.otherinfo %}
+            <section class="bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
+              <h4 class="font-semibold mb-2 text-gray-900">Other Info</h4>
+              <p class="text-gray-700 whitespace-pre-line">{{ v.otherinfo }}</p>
+            </section>
+            {% endif %}
+
+            {% if v.references %}
+            <section class="bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
+              <h4 class="font-semibold mb-2 text-gray-900">References</h4>
+              <ul class="list-disc list-inside text-gray-700 space-y-1">
+                {% for ref in v.references.split() %}
+                  <li><a href="{{ ref }}" target="_blank" class="text-blue-600 hover:underline">{{ ref }}</a></li>
+                {% endfor %}
+              </ul>
+            </section>
+            {% endif %}
+          </div>
+
+          <!-- Details Table -->
+          <aside class="bg-white border border-gray-300 rounded-lg overflow-hidden text-sm shadow-sm">
+            <table class="w-full border-collapse">
+              <thead class="bg-gray-100 text-gray-900 border-b border-gray-300">
+                <tr><th colspan="2" class="text-left px-4 py-2 font-semibold">Details</th></tr>
+              </thead>
+              <tbody class="text-gray-700 divide-y divide-gray-200">
+                <tr><td class="px-4 py-2 font-medium text-gray-600 w-1/3">URL</td><td class="px-4 py-2 break-all"><a href="{{ v.url }}" target="_blank" class="text-blue-600 hover:underline">{{ v.url or '—' }}</a></td></tr>
+                <tr><td class="px-4 py-2 font-medium text-gray-600">Confidence</td><td class="px-4 py-2">{{ v.confidence or '—' }}</td></tr>
+                <tr><td class="px-4 py-2 font-medium text-gray-600">CWE</td>
+                  <td class="px-4 py-2">{% if v.cweid %}<a href="https://cwe.mitre.org/data/definitions/{{ v.cweid }}.html" target="_blank" class="text-blue-600 hover:underline">CWE-{{ v.cweid }}</a>{% else %}—{% endif %}</td></tr>
+                <tr><td class="px-4 py-2 font-medium text-gray-600">WASC</td><td class="px-4 py-2">{{ v.wascid or '—' }}</td></tr>
+                <tr><td class="px-4 py-2 font-medium text-gray-600">Method</td><td class="px-4 py-2 text-yellow-600 font-medium">{{ v.method or '—' }}</td></tr>
+                <tr><td class="px-4 py-2 font-medium text-gray-600">Parameter</td><td class="px-4 py-2">{{ v.param or '—' }}</td></tr>
+                {% if v.evidence %}
+                <tr><td class="px-4 py-2 font-medium text-gray-600 align-top">Evidence</td><td class="px-4 py-2 text-xs text-gray-700 break-words bg-gray-50 border border-gray-200 rounded">{{ v.evidence }}</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </aside>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% if vulnerabilities|length == 0 %}
+  <div class="p-6 mt-6 bg-green-100 text-green-800 border border-green-300 rounded-lg text-center shadow-sm">✅ No vulnerabilities found.</div>
+{% endif %}
+
+<!-- 🟩 START NEW SECTION: Nikto / Server Vulnerabilities -->
+{% if server_vulnerabilities and server_vulnerabilities|length > 0 %}
+<div class="mt-12">
+  <h3 class="text-2xl font-bold mb-4 text-gray-900">Server Information</h3>
+
+  {% set banners = server_vulnerabilities | selectattr('category','equalto','Server Info') | list %}
+  {% set findings = server_vulnerabilities | selectattr('category','equalto','Nikto Finding') | list %}
+
+  {% if banners|length > 0 %}
+  <div class="bg-white border border-gray-300 rounded-lg p-5 mb-8 shadow-md">
+    <h4 class="text-lg font-semibold mb-3 text-gray-900">Server Information</h4>
+    <table class="w-full text-sm text-gray-700">
+      <tbody class="divide-y divide-gray-200">
+        {% for b in banners %}
+        <tr>
+          <td class="py-2 font-medium text-gray-600 w-1/3">{{ b.title }}</td>
+          <td class="py-2">
+            <span class="text-gray-800">{{ b.description }}</span><br>
+            <span class="text-sm text-gray-500">Recommendation: {{ b.recommendation }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if findings|length > 0 %}
+  <div class="bg-white border border-gray-300 rounded-lg p-5 shadow-md">
+    <h4 class="text-lg font-semibold mb-4 text-gray-900">Detected Issues (Nikto)</h4>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm text-gray-700 border border-gray-300 rounded-lg">
+        <thead class="bg-gray-100 text-gray-900">
+          <tr>
+            <th class="text-left px-4 py-2 w-1/4">Category</th>
+            <th class="text-left px-4 py-2">Description</th>
+            <th class="text-left px-4 py-2 w-1/4">Recommendation</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for f in findings %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-600">{{ f.category or 'Nikto Finding' }}</td>
+            <td class="px-4 py-3 text-gray-800">{{ f.description or 'No description available' }}</td>
+            <td class="px-4 py-3 text-gray-600">{{ f.recommendation or 'No recommendation provided' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+<!-- 🟩 END NEW SECTION -->
+</div>
+
+<!-- 🟩 FIXED: Keep only ONE toggle script -->
+<script>
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.target;
+    const panel = document.getElementById(id);
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    panel.classList.toggle('hidden', expanded);
+    btn.setAttribute('aria-expanded', String(!expanded));
+    btn.querySelector('.icon-plus').classList.toggle('hidden', !expanded);
+    btn.querySelector('.icon-minus').classList.toggle('hidden', expanded);
+  });
+});
+</script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const fadedRing = {
+  id: 'fadedRing',
+  beforeDraw(chart, args, options) {
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return;
+    const x = chart.width / 2;
+    const y = chart.height / 2;
+    const radius = (chart.width / 2) * 0.8;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = options.fadeColor;
+    ctx.lineWidth = chart.width * 0.13;
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+function createFullRingChart(canvasId, color, fadeColor) {
+  const ctx = document.getElementById(canvasId)?.getContext('2d');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: { datasets: [{ data: [100], backgroundColor: [color], borderWidth: 0 }] },
+    options: {
+      rotation: -90,
+      circumference: 360,
+      cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false }, fadedRing: { fadeColor } },
+      animation: { animateRotate: true, duration: 1400 }
+    },
+    plugins: [fadedRing]
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const counts = {
+    critical: {{ counts.Critical }},
+    high: {{ counts.High }},
+    medium: {{ counts.Medium }},
+    low: {{ counts.Low }}
+  };
+  if (counts.critical > 0) createFullRingChart('chartCritical', '#fb923c', 'rgba(251,146,60,0.2)');
+  if (counts.high > 0) createFullRingChart('chartHigh', '#ef4444', 'rgba(239,68,68,0.2)');
+  if (counts.medium > 0) createFullRingChart('chartMedium', '#facc15', 'rgba(250,204,21,0.2)');
+  if (counts.low > 0) createFullRingChart('chartLow', '#22c55e', 'rgba(34,197,94,0.2)');
+});
+</script>
+{% endblock %}

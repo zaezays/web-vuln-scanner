@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto mt-10 text-gray-800">
+  <h2 class="text-2xl font-bold mb-4">My Deep Scan Requests</h2>
+
+  {% if requests %}
+    <table class="w-full text-left border border-gray-300">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-3">ID</th>
+          <th class="p-3">Target URL</th>
+          <th class="p-3">Status</th>
+          <th class="p-3">Requested At</th>
+          <th class="p-3">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr class="border-t hover:bg-gray-50">
+          <td class="p-3">{{ r.id }}</td>
+          <td class="p-3">
+            <a href="{{ r.scan.target_url }}" class="text-blue-600 hover:underline" target="_blank">
+              {{ r.scan.target_url }}
+            </a>
+          </td>
+          <td class="p-3">
+            {% if r.status == 'Pending' %}
+              <span class="text-yellow-600 font-semibold">Pending</span>
+            {% elif r.status == 'completed' or r.status == 'Completed' %}
+              <span class="text-green-600 font-semibold">Completed</span>
+            {% else %}
+              <span class="text-gray-600 font-semibold">{{ r.status }}</span>
+            {% endif %}
+          </td>
+          <td class="p-3">{{ r.requested_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td class="p-3">
+            {% if r.status == 'Completed' and r.result_file %}
+              <a href="{{ url_for('static', filename='deep_results/' ~ r.result_file) }}" 
+                 target="_blank" class="text-green-600 hover:underline font-medium">
+                View Result
+              </a>
+            {% elif r.status == 'Pending' %}
+              <span class="text-gray-500 font-medium">Waiting...</span>
+            {% else %}
+              <span class="text-gray-400">N/A</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="p-4 bg-gray-100 text-center rounded">
+      You haven't made any deep scan requests yet.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

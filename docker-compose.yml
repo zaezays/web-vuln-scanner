@@ -16,10 +16,44 @@ services:
     environment:
       - ZAP_API_KEY=73d7metj7ni8583vnhf668epng
       - ZAP_PROXY=http://zap-daemon:8080
+      - REDIS_URL=redis://redis:6379/0               # ✅ add this
+      - CELERY_BROKER_URL=redis://redis:6379/0       # ✅ add this
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0   # ✅ add this
     ports:
       - "5001:5001"
     volumes:
       - ./instance:/app/instance
+      - /home/zae/Documents/web-vuln-scanner/static/uploads:/app/static/uploads
+      - ./app/static/uploads:/app/static/uploads
+      - /var/run/docker.sock:/var/run/docker.sock  
+      - ./static:/app/static
+      - ./data:/results     
+      - ./app/static/reports:/app/static/reports
     depends_on:
       - zap-daemon
+      - redis   
+
+  redis:
+      image: redis:7
+      container_name: redis
+      ports:
+        - "6379:6379"
+
+  celery-worker:
+    build: .
+    container_name: celery-worker
+    command: celery -A app.tasks.celery worker --loglevel=info
+    environment:
+      - ZAP_API_KEY=73d7metj7ni8583vnhf668epng
+      - ZAP_PROXY=http://zap-daemon:8080
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - zap-daemon
+    volumes:
+      - ./instance:/app/instance
+      - ./app/static/uploads:/app/static/uploads
+      - ./static:/app/static
+      - ./data:/results
+
 

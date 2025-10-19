@@ -6,6 +6,7 @@ from wtforms import (
     BooleanField, FileField
 )
 from flask_wtf.file import FileAllowed
+from wtforms import TextAreaField, FileField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, URL, EqualTo, Optional
 
 ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif']
@@ -41,6 +42,7 @@ class AddUserForm(FlaskForm):
         FileAllowed(ALLOWED_EXTENSIONS, 'Images only!')
     ])
     submit = SubmitField('Create User')
+    
 
 class AdminEditUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=150)])
@@ -51,4 +53,38 @@ class AdminEditUserForm(FlaskForm):
     is_active = BooleanField('Active')
     submit = SubmitField('Save Changes')
 
+class ScanForm(FlaskForm):
+    url = StringField('Target URL', validators=[DataRequired(), URL()])
 
+    
+    # ✅ NEW: Intensity level (Active scan strength)
+    intensity = SelectField(
+        'Attack Strength',
+        choices=[
+            ('LOW', 'Low'),
+            ('MEDIUM', 'Medium'),
+            ('HIGH', 'High'),
+            ('INSANE', 'Insane')
+        ],
+        default='MEDIUM'
+    )
+
+    # ✅ NEW: Threshold level (alert sensitivity)
+    threshold = SelectField(
+        'Alert Threshold',
+        choices=[
+            ('OFF', 'Off'),
+            ('LOW', 'Low'),
+            ('MEDIUM', 'Medium'),
+            ('HIGH', 'High')
+        ],
+        default='MEDIUM'
+    )
+
+    submit = SubmitField('Start Scan')
+    
+
+class DeepScanReplyForm(FlaskForm):
+    admin_note = TextAreaField("Admin Note", validators=[DataRequired()])
+    result_file = FileField("Result File", validators=[DataRequired(), FileAllowed(['pdf'], 'PDFs only!')])
+    submit = SubmitField("Send Result")

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-6 mt-10 text-gray-800">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-100">Notifications</h2>
+      <p class="text-sm text-gray-400">
+        You’ve {{ unread_count }} unread notification{{ '' if unread_count == 1 else 's' }}.
+      </p>
+    </div>
+
+    <form action="{{ url_for('main.mark_all_notifications_read') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit"
+        class="bg-green-100 hover:bg-green-200 text-green-800 text-sm px-4 py-2 rounded-md font-medium transition">
+        Mark all as read
+      </button>
+    </form>
+  </div>
+
+  {% if notifications %}
+  <!-- Filter Tabs -->
+  <div class="flex gap-6 border-b border-gray-600 pb-3 mb-6">
+    <a href="{{ url_for('main.notifications', filter='all') }}"
+       class="pb-1 {% if filter == 'all' %}text-green-400 border-b-2 border-green-500{% else %}text-gray-400 hover:text-green-300{% endif %}">
+      All
+    </a>
+  </div>
+
+  <!-- Notification Cards -->
+  <div class="space-y-4">
+    {% for n in notifications|sort(attribute='created_at', reverse=True) %}
+    {% set box_color = '' %}
+    {% if n.type in ['scan_complete', 'user_add', 'user_edit_success', 'deep_scan_request'] %}
+      {% set box_color = 'bg-green-50 border-green-200' %}
+    {% elif n.type in ['scan_start', 'in_progress'] %}
+      {% set box_color = 'bg-orange-50 border-orange-200' %}
+    {% elif n.type in ['fail_action', 'scan_fail'] %}
+      {% set box_color = 'bg-red-50 border-red-200' %}
+    {% else %}
+      {% set box_color = 'bg-gray-50 border-gray-200' %}
+    {% endif %}
+
+    <div class="flex justify-between items-center p-5 rounded-xl border shadow-sm transition {{ box_color }}">
+      <!-- Left Section: Icon + Message -->
+      <div class="flex items-start gap-4">
+        <!-- Icon -->
+        <div class="p-3 rounded-lg flex items-center justify-center
+          {% if 'fail' in n.type %}bg-red-100{% elif 'progress' in n.type or 'start' in n.type %}bg-orange-100{% else %}bg-green-100{% endif %}">
+          
+          {% if n.type == 'scan_fail' or n.type == 'fail_action' %}
+            <!-- Fail -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+              class="bi bi-exclamation-circle-fill text-red-600" viewBox="0 0 16 16">
+              <path
+                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+            </svg>
+          {% elif n.type == 'scan_start' or n.type == 'in_progress' %}
+            <!-- In Progress -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+              class="bi bi-hourglass-split text-orange-600" viewBox="0 0 16 16">
+              <path
+                d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z"/>
+            </svg>
+          {% else %}
+            <!-- Success / New -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+              class="bi bi-check2-all text-green-600" viewBox="0 0 16 16">
+              <path
+                d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
+              <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+            </svg>
+          {% endif %}
+        </div>
+
+        <!-- Message -->
+        <div>
+          <h4 class="font-semibold text-gray-900 dark:text-white">{{ n.message }}</h4>
+          <p class="text-xs text-gray-500">{{ n.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+      </div>
+
+      <!-- Right Side: Status or Delete -->
+      <div class="flex items-center gap-3">
+        {% if not n.is_read %}
+          <span class="px-3 py-1 bg-green-500 text-white text-xs rounded-md font-semibold">New</span>
+        {% endif %}
+        <form method="POST" action="{{ url_for('main.delete_notification', notif_id=n.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"
+            class="flex items-center gap-1 text-sm text-red-400 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+              class="bi bi-trash" viewBox="0 0 16 16">
+              <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5v-8z"/>
+              <path fill-rule="evenodd"
+                d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4H2.5a1 1 0 0 1 0-2h3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1h3a1 1 0 0 1 1 1z"/>
+            </svg>
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <p class="text-gray-400">You have no notifications yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+

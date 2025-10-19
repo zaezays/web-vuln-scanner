@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg mt-10 text-gray-100">
-  <h2 class="text-2xl font-semibold mb-6">+ Add New User</h2>
+<div class="max-w-2xl mx-auto p-6 bg-white rounded-lg mt-10 shadow-xl border border-gray-200 text-gray-800">
+  <h2 class="text-2xl font-semibold mb-6 text-gray-900">+ Add New User</h2>
   <form method="POST" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
 
     <!-- Username -->
     <div class="mb-4">
-      {{ form.username.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.username(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {{ form.username.label(class="block text-sm text-gray-700 mb-1") }}
+      {{ form.username(class="w-full px-3 py-2 bg-gray-50 text-gray-900 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500") }}
       {% for error in form.username.errors %}
         <p class="text-red-500 text-sm mt-1">{{ error }}</p>
       {% endfor %}
@@ -17,8 +17,8 @@
 
     <!-- Email -->
     <div class="mb-4">
-      {{ form.email.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.email(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {{ form.email.label(class="block text-sm text-gray-700 mb-1") }}
+      {{ form.email(class="w-full px-3 py-2 bg-gray-50 text-gray-900 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500") }}
       {% for error in form.email.errors %}
         <p class="text-red-500 text-sm mt-1">{{ error }}</p>
       {% endfor %}
@@ -26,8 +26,8 @@
 
     <!-- Password -->
     <div class="mb-4">
-      {{ form.password.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.password(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {{ form.password.label(class="block text-sm text-gray-700 mb-1") }}
+      {{ form.password(class="w-full px-3 py-2 bg-gray-50 text-gray-900 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500") }}
       {% for error in form.password.errors %}
         <p class="text-red-500 text-sm mt-1">{{ error }}</p>
       {% endfor %}
@@ -35,8 +35,8 @@
 
     <!-- Confirm Password -->
     <div class="mb-4">
-      {{ form.confirm_password.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.confirm_password(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {{ form.confirm_password.label(class="block text-sm text-gray-700 mb-1") }}
+      {{ form.confirm_password(class="w-full px-3 py-2 bg-gray-50 text-gray-900 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500") }}
       {% for error in form.confirm_password.errors %}
         <p class="text-red-500 text-sm mt-1">{{ error }}</p>
       {% endfor %}
@@ -44,8 +44,8 @@
 
     <!-- Role -->
     <div class="mb-4">
-      {{ form.role.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.role(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {{ form.role.label(class="block text-sm text-gray-700 mb-1") }}
+      {{ form.role(class="w-full px-3 py-2 bg-gray-50 text-gray-900 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500") }}
       {% for error in form.role.errors %}
         <p class="text-red-500 text-sm mt-1">{{ error }}</p>
       {% endfor %}
@@ -53,8 +53,8 @@
 
     <!-- Company Name -->
     <div class="mb-4">
-      {{ form.company_name.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.company_name(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
+      {{ form.company_name.label(class="block text-sm text-gray-700 mb-1") }}
+      {{ form.company_name(class="w-full px-3 py-2 bg-gray-50 text-gray-900 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500") }}
       {% for error in form.company_name.errors %}
         <p class="text-red-500 text-sm mt-1">{{ error }}</p>
       {% endfor %}
@@ -67,15 +67,15 @@
              name="{{ form.is_active.name }}"
              class="form-checkbox h-5 w-5 text-blue-600"
              {% if form.is_active.data %}checked{% endif %}>
-      <label for="{{ form.is_active.id }}" class="ml-2 text-sm text-gray-300">
+      <label for="{{ form.is_active.id }}" class="ml-2 text-sm text-gray-700">
         {{ form.is_active.label.text }}
       </label>
     </div>
 
     <!-- Profile Picture -->
     <div class="mb-4">
-      {{ form.profile_picture.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.profile_picture(class="w-full text-sm text-white bg-gray-700 border border-gray-600 rounded-md cursor-pointer") }}
+      {{ form.profile_picture.label(class="block text-sm text-gray-700 mb-1") }}
+      {{ form.profile_picture(class="w-full text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-md cursor-pointer focus:ring-blue-500 focus:border-blue-500") }}
       {% for error in form.profile_picture.errors %}
         <p class="text-red-500 text-sm mt-1">{{ error }}</p>
       {% endfor %}
@@ -84,10 +84,13 @@
     <!-- Buttons -->
     <div class="flex justify-end space-x-3 mt-6">
       <a href="{{ url_for('main.user_management') }}"
-         class="px-4 py-2 bg-gray-600 rounded text-white hover:bg-gray-500">Cancel</a>
-      {{ form.submit(class="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700") }}
+         class="px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 focus:ring-4 focus:ring-red-300">
+        Cancel
+      </a>
+      {{ form.submit(class="px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 focus:ring-4 focus:ring-blue-300") }}
     </div>
   </form>
 </div>
 {% endblock %}
+
 

@@ -1,19 +1,430 @@
-<!-- templates/dashboard.html -->
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-  <h1 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-    Welcome, {{ current_user.username }}!
-  </h1>
-  <p class="text-gray-700 dark:text-gray-300 mb-6">
-    Your role: <strong>{{ current_user.role }}</strong>
-  </p>
 
-  <a href="{{ url_for('main.logout') }}"
-     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
-    Logout
+<!-- Dashboard Header -->
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+</div>
+
+<!-- 🟩 Role-Based Statistic Cards -->
+{% if dashboard_view == "admin" %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+  <!-- 🟦 Total Scans -->
+  <a href="{{ url_for('main.scanning_history') }}" class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">Total Scans</h5>
+      <div class="p-3 bg-blue-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-3xl font-bold text-blue-600">{{ total_scans }}</p>
+    <p class="text-gray-500 text-sm mt-1">All scans performed in the system.</p>
+  </a>
+
+  <!-- 🟩 Completed Scans -->
+  <a href="{{ url_for('main.scanning_history') }}" class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">Completed Scans</h5>
+      <div class="p-3 bg-green-100 rounded-full">
+        <svg class="w-7 h-7 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M12 2c-.791 0-1.55.314-2.11.874l-.893.893a.985.985 0 0 1-.696.288H7.04A2.984 2.984 0 0 0 4.055 7.04v1.262a.986.986 0 0 1-.288.696l-.893.893a2.984 2.984 0 0 0 0 4.22l.893.893a.985.985 0 0 1 .288.696v1.262a2.984 2.984 0 0 0 2.984 2.984h1.262c.261 0 .512.104.696.288l.893.893a2.984 2.984 0 0 0 4.22 0l.893-.893a.985.985 0 0 1 .696-.288h1.262a2.984 2.984 0 0 0 2.984-2.984V15.7c0-.261.104-.512.288-.696l.893-.893a2.984 2.984 0 0 0 0-4.22l-.893-.893a.985.985 0 0 1-.288-.696V7.04a2.984 2.984 0 0 0-2.984-2.984h-1.262a.985.985 0 0 1-.696-.288l-.893-.893A2.984 2.984 0 0 0 12 2Zm3.683 7.73a1 1 0 1 0-1.414-1.413l-4.253 4.253-1.277-1.277a1 1 0 0 0-1.415 1.414l1.985 1.984a1 1 0 0 0 1.414 0l4.96-4.96Z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-3xl font-bold text-green-600">{{ completed_scans }}</p>
+    <p class="text-gray-500 text-sm mt-1">Successfully finished vulnerability scans.</p>
+  </a>
+
+  <!-- 🟨 Organizations -->
+  <a href="{{ url_for('main.user_management') }}" class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">Organizations</h5>
+      <div class="p-3 bg-yellow-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-yellow-500" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-3xl font-bold text-yellow-500">{{ total_companies }}</p>
+    <p class="text-gray-500 text-sm mt-1">Registered company accounts.</p>
+  </a>
+
+  <!-- 🟪 Total Users -->
+  <a href="{{ url_for('main.user_management') }}" class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">Total Users</h5>
+      <div class="p-3 bg-purple-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-purple-600" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-3xl font-bold text-purple-600">{{ user_count }}</p>
+    <p class="text-gray-500 text-sm mt-1">All users registered in the system.</p>
   </a>
 </div>
+
+{% else %}
+<!-- 🟩 Normal User Dashboard -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  
+  <!-- 🟦 My Scans -->
+  <div class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">My Scans</h5>
+      <div class="p-3 bg-blue-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-3xl font-bold text-blue-600">{{ total_scans }}</p>
+    <p class="text-gray-500 text-sm mt-1">Scans performed by your organization.</p>
+  </div>
+
+  <!-- 🟩 Completed Scans -->
+  <div class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">Completed Scans</h5>
+      <div class="p-3 bg-green-100 rounded-full">
+        <svg class="w-7 h-7 text-green-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M12 2c-.791 0-1.55.314-2.11.874l-.893.893a.985.985 0 0 1-.696.288H7.04A2.984 2.984 0 0 0 4.055 7.04v1.262a.986.986 0 0 1-.288.696l-.893.893a2.984 2.984 0 0 0 0 4.22l.893.893a.985.985 0 0 1 .288.696v1.262a2.984 2.984 0 0 0 2.984 2.984h1.262c.261 0 .512.104.696.288l.893.893a2.984 2.984 0 0 0 4.22 0l.893-.893a.985.985 0 0 1 .696-.288h1.262a2.984 2.984 0 0 0 2.984-2.984V15.7c0-.261.104-.512.288-.696l.893-.893a2.984 2.984 0 0 0 0-4.22l-.893-.893a.985.985 0 0 1-.288-.696V7.04a2.984 2.984 0 0 0-2.984-2.984h-1.262a.985.985 0 0 1-.696-.288l-.893-.893A2.984 2.984 0 0 0 12 2Zm3.683 7.73a1 1 0 1 0-1.414-1.413l-4.253 4.253-1.277-1.277a1 1 0 0 0-1.415 1.414l1.985 1.984a1 1 0 0 0 1.414 0l4.96-4.96Z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-3xl font-bold text-green-600">{{ completed_scans }}</p>
+    <p class="text-gray-500 text-sm mt-1">Completed vulnerability scans.</p>
+  </div>
+
+  <!-- 🟨 My Company -->
+  <div class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">My Company</h5>
+      <div class="p-3 bg-yellow-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-yellow-500" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-2xl font-bold text-yellow-500">
+      {{ current_user.company.name if current_user.company else "N/A" }}
+    </p>
+    <p class="text-gray-500 text-sm mt-1">Your organization in the system.</p>
+  </div>
+
+  <!-- 🟪 Company Users -->
+  <div class="block p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div class="flex items-center justify-between">
+      <h5 class="text-lg font-semibold text-gray-800">Company Users</h5>
+      <div class="p-3 bg-purple-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-purple-600" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+        </svg>
+      </div>
+    </div>
+    <p class="mt-4 text-3xl font-bold text-purple-600">{{ user_count }}</p>
+    <p class="text-gray-500 text-sm mt-1">Users in your organization.</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- 🧠 Vulnerabilities Summary -->
+<div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-10">
+  <h3 class="text-lg font-semibold text-gray-800 mb-4">Vulnerabilities Summary</h3>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 items-center">
+    <!-- Left: Doughnut Chart -->
+    <div class="flex flex-col items-center">
+      <div class="relative w-56 h-56">
+        <canvas id="vulnDonut"></canvas>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="text-center">
+            <p class="text-3xl font-bold text-gray-800">
+              {{ vuln_counts.Critical + vuln_counts.High + vuln_counts.Medium + vuln_counts.Low + vuln_counts.Info }}
+            </p>
+            <p class="text-xs text-gray-500">Total</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-xs text-gray-700">
+        <div class="flex items-center gap-1">
+          <span class="w-2.5 h-2.5 bg-red-800 rounded-full"></span>
+          Critical ({{ vuln_counts.Critical }})
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+          High ({{ vuln_counts.High }})
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="w-2.5 h-2.5 bg-yellow-400 rounded-full"></span>
+          Medium ({{ vuln_counts.Medium }})
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+          Low ({{ vuln_counts.Low }})
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+          Info ({{ vuln_counts.Info }})
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Multi-Line Trend Chart -->
+    <div class="w-full -ml-6">
+      <canvas id="severityTrendChart" height="150"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // 🟠 Doughnut Chart
+  const donutCtx = document.getElementById("vulnDonut").getContext("2d");
+  new Chart(donutCtx, {
+    type: "doughnut",
+    data: {
+      labels: ["Critical", "High", "Medium", "Low", "Info"],
+      datasets: [{
+        data: [
+          {{ vuln_counts.Critical }},
+          {{ vuln_counts.High }},
+          {{ vuln_counts.Medium }},
+          {{ vuln_counts.Low }},
+          {{ vuln_counts.Info }}
+        ],
+        backgroundColor: [
+          "#991b1b", // Critical
+          "#ef4444", // High
+          "#facc15", // Medium
+          "#22c55e", // Low
+          "#3b82f6"  // Info
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      cutout: "70%",
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.label}: ${ctx.formattedValue}`
+          }
+        }
+      }
+    }
+  });
+
+  // 🟢 Multi-Line Severity Trend Chart (last 7 scans)
+  const scans = [
+    {% for scan in scans %}
+      {
+        date: "{{ scan.started_local.strftime('%d %b') if scan.started_local else '' }}",
+        critical: {{ scan.critical_count if scan.critical_count else 0 }},
+        high: {{ scan.high_count if scan.high_count else 0 }},
+        medium: {{ scan.medium_count if scan.medium_count else 0 }},
+        low: {{ scan.low_count if scan.low_count else 0 }},
+        info: {{ scan.info_count if scan.info_count else 0 }}
+      },
+    {% endfor %}
+  ];
+
+  // Filter to latest 7 unique scan dates
+  const uniqueDates = [];
+  const filtered = scans.filter(s => {
+    if (!uniqueDates.includes(s.date) && s.date !== "") {
+      uniqueDates.push(s.date);
+      return true;
+    }
+    return false;
+  }).slice(-7);
+
+  const ctxTrend = document.getElementById("severityTrendChart").getContext("2d");
+  new Chart(ctxTrend, {
+    type: "line",
+    data: {
+      labels: filtered.map(s => s.date),
+      datasets: [
+        {
+          label: "Critical",
+          data: filtered.map(s => s.critical),
+          borderColor: "#991b1b",
+          backgroundColor: "rgba(153,27,27,0.1)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+        },
+        {
+          label: "High",
+          data: filtered.map(s => s.high),
+          borderColor: "#ef4444",
+          backgroundColor: "rgba(239,68,68,0.1)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+        },
+        {
+          label: "Medium",
+          data: filtered.map(s => s.medium),
+          borderColor: "#facc15",
+          backgroundColor: "rgba(250,204,21,0.1)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+        },
+        {
+          label: "Low",
+          data: filtered.map(s => s.low),
+          borderColor: "#22c55e",
+          backgroundColor: "rgba(34,197,94,0.1)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+        },
+        {
+          label: "Info",
+          data: filtered.map(s => s.info),
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59,130,246,0.1)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: "bottom",
+          labels: { boxWidth: 10, color: "#4b5563" }
+        },
+        tooltip: {
+          mode: "index",
+          intersect: false
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: "#6b7280" }
+        },
+        y: {
+          grid: { color: "#e5e7eb" },
+          ticks: { color: "#6b7280", stepSize: 5 },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+});
+</script>
+
+<!-- 🧩 Information + Recent Scans section -->
+<div class="grid grid-cols-[1.5fr_0.5fr] gap-6 mt-8">
+
+  <!-- Information Table -->
+  <div class="relative shadow-md sm:rounded-lg overflow-hidden">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <caption class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+        Information
+        <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+          General scan results showing secure configurations or informational findings from recent scans.
+        </p>
+      </caption>
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th scope="col" class="px-6 py-3">Vulnerability</th>
+          <th scope="col" class="px-6 py-3">Classification</th>
+          <th scope="col" class="px-6 py-3">Confidence</th>
+          <th scope="col" class="px-6 py-3">Date Scanned</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in info_vulns %}
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            {{ v.name }}
+          </th>
+          <td class="px-6 py-4">
+            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+              {{ v.classification }}
+            </a>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-green-500 font-semibold">{{ v.confidence }}</span>
+          </td>
+          <td class="px-6 py-4">
+            {{ v.date_scanned.strftime('%Y-%m-%d %H:%M') if v.date_scanned else '-' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Recent Scans Table -->
+<div class="relative overflow-x-auto shadow-md sm:rounded-lg bg-white border border-gray-200 w-[400px]">
+  <div class="px-6 pt-4 pb-3 flex justify-between items-center border-b border-gray-200 bg-white rounded-t-lg">
+    <h3 class="text-base font-semibold text-gray-800">Recent Scans</h3>
+    <a href="{{ url_for('main.scanning_history') }}"
+       class="text-sm font-medium text-blue-600 hover:underline">See all</a>
+  </div>
+
+  <div class="max-w-full overflow-x-auto">
+    <table class="w-full text-sm text-left text-gray-600">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 w-[65%]">URL</th>
+          <th scope="col" class="px-6 py-3 text-center w-[35%]">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in recent_scans %}
+        <tr class="bg-white border-b hover:bg-gray-50 transition-all">
+          <td class="px-6 py-3">
+            <a href="{{ s.target_url }}" target="_blank"
+            class="text-blue-600 font-medium border border-blue-400 px-3 py-1.5 rounded-md hover:bg-blue-50 transition whitespace-nowrap overflow-hidden text-ellipsis">
+            {{ s.target_url }}
+          </a>
+          </td>
+          <td class="px-6 py-3 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <span class="font-semibold text-gray-700">{{ s.score }}</span>
+              <div class="w-20 bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-500 h-2 rounded-full" style="width: {{ s.score }}%"></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="2" class="px-8 py-4 text-center text-gray-400">No recent scans available</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+</div>
+
+{{ super() }}
+
+
 {% endblock %}
+
 

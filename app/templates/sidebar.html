@@ -1,49 +1,204 @@
-<!-- templates/sidebar.html -->
 <aside id="logo-sidebar"
-       class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full sm:translate-x-0 bg-gray-800 border-r border-gray-700"
+       class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full sm:translate-x-0 bg-gray-900 border-r border-gray-800"
        aria-label="Sidebar">
   <div class="h-full px-3 pb-4 overflow-y-auto">
-    <ul class="space-y-2 font-medium text-white">
+    <ul class="space-y-2 font-semibold text-gray-300">
+
+      <!-- Dashboard -->
       <li>
         <a href="{{ url_for('main.dashboard') }}"
-           class="flex items-center p-2 rounded-lg hover:bg-gray-700 group">
-          <span class="ms-3">Dashboard</span>
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.dashboard' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg class="w-6 h-6 me-2 
+               {% if request.endpoint == 'main.dashboard' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}" 
+               fill="currentColor" viewBox="0 0 24 24">
+            <path d="M5 3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5Zm14 18a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h4ZM5 11a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H5Zm14 2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4Z"/>
+          </svg>
+          <span>Dashboard</span>
         </a>
       </li>
 
-      {% if current_user.is_authenticated and current_user.role == 'admin' %}
-      <li>
-        <a href="{{ url_for('main.user_management') }}"
-           class="flex items-center p-2 rounded-lg hover:bg-gray-700 group">
-          <span class="ms-3">User Management</span>
-        </a>
-      </li>
-      {% endif %}
-
+      <!-- Scan -->
       {% if current_user.is_authenticated %}
       <li>
         <a href="{{ url_for('main.scan_page') }}"
-           class="flex items-center p-2 rounded-lg hover:bg-gray-700 group">
-          <span class="ms-3">Scan</span>
-        </a>
-      </li>
-      <li>
-        <a href="{{ url_for('main.logout') }}"
-           class="flex items-center p-2 rounded-lg hover:bg-gray-700 group">
-          <span class="ms-3">Logout</span>
-        </a>
-      </li>
-      {% else %}
-      <li>
-        <a href="{{ url_for('main.login') }}"
-           class="flex items-center p-2 rounded-lg hover:bg-gray-700 group">
-          <span class="ms-3">Login</span>
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.scan_page' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg class="w-6 h-6 me-2 
+               {% if request.endpoint == 'main.scan_page' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}"
+               fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M8 13A5 5 0 1 1 8 3a5 5 0 0 1 0 10m0 1A6 6 0 1 0 8 2a6 6 0 0 0 0 12"/>
+            <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8"/>
+            <path d="M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+          </svg>
+          <span>Scan</span>
         </a>
       </li>
       {% endif %}
+
+      <!-- Notifications -->
+      <li>
+        <a href="{{ url_for('main.notifications') }}"
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.notifications' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+               class="bi bi-bell-fill me-2 
+               {% if request.endpoint == 'main.notifications' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}" viewBox="0 0 16 16">
+            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
+          </svg>
+          <span>Notifications</span>
+        </a>
+      </li>
+
+      <!-- Deep Scan Request -->
+      <li>
+        <a href="{{ url_for('main.my_deep_scan_requests') }}"
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.my_deep_scan_requests' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+               class="bi bi-clipboard-plus-fill me-2 
+               {% if request.endpoint == 'main.my_deep_scan_requests' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}" viewBox="0 0 16 16">
+            <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5zm4.5 6V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5a.5.5 0 0 1 1 0"/>
+          </svg>
+          <span>Deep Scan Request</span>
+        </a>
+      </li>
+
+      <!-- Scanning History -->
+      <li>
+        <a href="{{ url_for('main.scanning_history') }}"
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.scanning_history' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg class="w-6 h-6 me-2 
+               {% if request.endpoint == 'main.scanning_history' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}"
+               fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" d="M9 7V2.221a2 2 0 0 0-.5.365L4.586 6.5a2 2 0 0 0-.365.5H9Zm2 0V2h7a2 2 0 0 1 2 2v5.703l-4.311-1.58a2 2 0 0 0-1.377 0l-5 1.832A2 2 0 0 0 8 11.861c.03 2.134.582 4.228 1.607 6.106.848 1.555 2 2.924 3.382 4.033H6a2 2 0 0 1-2-2V9h5a2 2 0 0 0 2-2Z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd" d="M15.345 9.061a1 1 0 0 0-.689 0l-5 1.833a1 1 0 0 0-.656.953c.028 1.97.538 3.905 1.485 5.641a12.425 12.425 0 0 0 3.956 4.34 1 1 0 0 0 1.12 0 12.426 12.426 0 0 0 3.954-4.34A12.14 12.14 0 0 0 21 11.848a1 1 0 0 0-.656-.954l-5-1.833ZM15 19.765a10.401 10.401 0 0 0 2.76-3.235 10.15 10.15 0 0 0 1.206-4.011L15 11.065v8.7Z" clip-rule="evenodd"/>
+          </svg>
+          <span>Scanning History</span>
+        </a>
+      </li>
+
+      <!-- User Management (ADMIN ONLY) -->
+      {% if current_user.role in ['admin', 'superadmin'] %}
+      <li>
+        <a href="{{ url_for('main.user_management') }}"
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.user_management' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg class="w-6 h-6 me-2 
+               {% if request.endpoint == 'main.user_management' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}"
+               fill="currentColor" viewBox="0 0 16 16">
+            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+          </svg>
+          <span>User Management</span>
+        </a>
+      </li>
+
+      <!-- Manage Deep Scan Requests (ADMIN ONLY) -->
+      <li>
+        <a href="{{ url_for('main.admin_deep_scan_requests') }}"
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.admin_deep_scan_requests' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+               class="bi bi-clipboard-plus-fill me-2 
+               {% if request.endpoint == 'main.admin_deep_scan_requests' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}" viewBox="0 0 16 16">
+            <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5zm4.5 6V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5a.5.5 0 0 1 1 0"/>
+          </svg>
+          <span>Manage Deep Scan Requests</span>
+        </a>
+      </li>
+      {% endif %}
+
+      <!-- Activity Log -->
+      <li>
+        <a href="{{ url_for('main.activity_log') }}"
+           class="flex items-center p-2 rounded-lg transition
+           {% if request.endpoint == 'main.activity_log' %}
+             bg-gray-800 text-cyan-400
+           {% else %}
+             hover:bg-gray-800 hover:text-cyan-400
+           {% endif %}">
+          <svg class="w-6 h-6 me-2 
+               {% if request.endpoint == 'main.activity_log' %}
+                 text-cyan-400
+               {% else %}
+                 text-gray-400 group-hover:text-cyan-400
+               {% endif %}"
+               fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
+            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
+            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+          <span>Activity Log</span>
+        </a>
+      </li>
+
     </ul>
   </div>
 </aside>
+
+
+
+
 
 
 

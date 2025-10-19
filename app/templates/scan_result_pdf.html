@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scan Report – {{ scan.target_url }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #333; margin: 40px; }
+    h1, h2, h3, h4 { color: #222; margin-bottom: 8px; }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    h2 { font-size: 18px; margin-top: 25px; }
+    h3 { font-size: 16px; margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 12px; }
+    th { background-color: #f2f2f2; }
+    .section { border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 6px; background: #fff; }
+    .info-table td { border: none; padding: 4px 0; }
+    .severity-critical { color: #fb923c; font-weight: bold; }
+    .severity-high { color: #ef4444; font-weight: bold; }
+    .severity-medium { color: #facc15; font-weight: bold; }
+    .severity-low { color: #22c55e; font-weight: bold; }
+    pre { background: #f9f9f9; padding: 8px; border: 1px solid #ddd; overflow-x: auto; font-size: 11px; }
+    ul { margin: 4px 0 4px 18px; }
+    .small { font-size: 11px; color: #555; }
+    .divider { border-top: 2px solid #ddd; margin: 25px 0; }
+  </style>
+</head>
+<body>
+
+<!-- 🟩 NEW STRUCTURED PDF LAYOUT -->
+<h1>Security Scan Report</h1>
+<p><strong>Target:</strong> {{ scan.target_url }}</p>
+<p><strong>Generated at:</strong> {{ scan.completed_at or "" }}</p>
+<hr />
+
+<!-- Summary Info Section -->
+<div class="section">
+  <h2>Scan Summary</h2>
+  <table class="info-table">
+    <tr><td><strong>Scan Time:</strong></td><td>{{ scan.started_at or '—' }}</td></tr>
+    <tr><td><strong>Scan Duration:</strong></td>
+        <td>{% if scan.started_at and scan.completed_at %}{{ (scan.completed_at - scan.started_at) }}{% else %}—{% endif %}</td></tr>
+    <tr><td><strong>Total Vulnerabilities:</strong></td><td>{{ scan_result|length }}</td></tr>
+  </table>
+</div>
+
+<!-- Vulnerabilities List -->
+<h2>Detected Vulnerabilities</h2>
+
+{% if scan_result and scan_result|length > 0 %}
+  {% for alert in scan_result %}
+  <div class="section">
+    <h3>{{ alert.title or "Untitled Vulnerability" }}
+      — 
+      {% if alert.risk_level == 'Critical' %}
+        <span class="severity-critical">Critical</span>
+      {% elif alert.risk_level == 'High' %}
+        <span class="severity-high">High</span>
+      {% elif alert.risk_level == 'Medium' %}
+        <span class="severity-medium">Medium</span>
+      {% elif alert.risk_level == 'Low' %}
+        <span class="severity-low">Low</span>
+      {% else %}
+        <span>{{ alert.risk_level or 'Info' }}</span>
+      {% endif %}
+    </h3>
+
+    <p><strong>Description:</strong><br>{{ alert.description or "No description available." }}</p>
+    <p><strong>Recommendation:</strong><br>{{ alert.recommendation or "No recommendation provided." }}</p>
+
+    <h4>Technical Details</h4>
+    <table>
+      {% if alert.url %}<tr><td><strong>URL</strong></td><td>{{ alert.url }}</td></tr>{% endif %}
+      {% if alert.method %}<tr><td><strong>Method</strong></td><td>{{ alert.method }}</td></tr>{% endif %}
+      {% if alert.param %}<tr><td><strong>Parameter</strong></td><td>{{ alert.param }}</td></tr>{% endif %}
+      {% if alert.attack %}<tr><td><strong>Attack</strong></td><td><pre>{{ alert.attack }}</pre></td></tr>{% endif %}
+      {% if alert.evidence %}<tr><td><strong>Evidence</strong></td><td><pre>{{ alert.evidence }}</pre></td></tr>{% endif %}
+      {% if alert.otherinfo %}<tr><td><strong>Other Info</strong></td><td>{{ alert.otherinfo }}</td></tr>{% endif %}
+      {% if alert.confidence %}<tr><td><strong>Confidence</strong></td><td>{{ alert.confidence }}</td></tr>{% endif %}
+      {% if alert.cweid %}<tr><td><strong>CWE ID</strong></td><td>{{ alert.cweid }}</td></tr>{% endif %}
+      {% if alert.wascid %}<tr><td><strong>WASC ID</strong></td><td>{{ alert.wascid }}</td></tr>{% endif %}
+    </table>
+
+    {% if alert.references %}
+      <p><strong>References:</strong></p>
+      <ul>
+        {% for ref in alert.references.split() %}
+          <li><a href="{{ ref }}">{{ ref }}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% else %}
+  <p>No vulnerabilities found in this scan.</p>
+{% endif %}
+
+<!-- 🟩 NEW SECTION: Nikto / Server Findings (for PDF) -->
+{% if scan.server_vulnerabilities and scan.server_vulnerabilities|length > 0 %}
+<div class="divider"></div>
+<h2>Server & Nikto Findings</h2>
+
+{% set banners = scan.server_vulnerabilities | selectattr('category','equalto','Server Info') | list %}
+{% set findings = scan.server_vulnerabilities | selectattr('category','equalto','Nikto Finding') | list %}
+
+{% if banners|length > 0 %}
+<div class="section">
+  <h3>Server Information</h3>
+  <table>
+    <thead><tr><th>Title</th><th>Description</th><th>Recommendation</th></tr></thead>
+    <tbody>
+    {% for b in banners %}
+      <tr>
+        <td>{{ b.title }}</td>
+        <td>{{ b.description }}</td>
+        <td>{{ b.recommendation }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if findings|length > 0 %}
+<div class="section">
+  <h3>Detected Issues (Nikto)</h3>
+  <table>
+    <thead><tr><th>Category</th><th>Description</th><th>Recommendation</th></tr></thead>
+    <tbody>
+    {% for f in findings %}
+      <tr>
+        <td>{{ f.category or 'Nikto Finding' }}</td>
+        <td>{{ f.description or 'No description available' }}</td>
+        <td>{{ f.recommendation or 'No recommendation provided' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endif %}
+<!-- 🟩 END NEW STRUCTURED PDF LAYOUT -->
+
+</body>
+</html>
+

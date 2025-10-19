@@ -1,0 +1,15 @@
+/* Add this to customize toggle icons */
+.vuln-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.vuln-card summary::after {
+  content: ' ⯈';
+  font-size: 1rem;
+  color: #60a5fa;
+  float: right;
+}
+
+.vuln-card[open] summary::after {
+  content: ' ⯆';
+}

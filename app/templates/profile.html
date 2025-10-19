@@ -1,32 +1,53 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-md mx-auto p-6 bg-gray-800 rounded-lg mt-14 text-gray-100">
-  <h2 class="text-2xl font-semibold mb-6">My Profile</h2>
-  <form method="POST" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
+<div class="container mx-auto mt-6">
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">My Profile</h2>
 
-    <div class="mb-4">
-      {{ form.username.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.username(class="w-full px-3 py-2 bg-gray-700 text-white rounded-md") }}
-      {% for error in form.username.errors %}
-        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
-      {% endfor %}
+  <div class="bg-gray-100 text-gray-800 p-6 rounded-lg shadow-lg border border-gray-300 relative">
+    <div class="flex items-center gap-4 mb-4">
+      <img src="{{ url_for('static', filename='uploads/' ~ current_user.profile_picture) if current_user.profile_picture else url_for('static', filename='images/default-avatar.png') }}"
+           alt="Profile Picture" class="w-16 h-16 rounded-full object-cover border-2 border-gray-400">
+      <div>
+        <p class="text-lg font-bold">{{ current_user.username }}</p>
+        <p class="text-sm text-gray-500">{{ current_user.email }}</p>
+      </div>
     </div>
 
-    <div class="mb-4">
-      {{ form.picture.label(class="block text-sm text-gray-300 mb-1") }}
-      {{ form.picture(class="w-full text-sm text-white bg-gray-700 border border-gray-600 rounded-md cursor-pointer") }}
-      {% for error in form.picture.errors %}
-        <p class="text-red-500 text-sm mt-1">{{ error }}</p>
-      {% endfor %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <p class="text-sm text-gray-500">Company:</p>
+        <p>{{ current_user.company.name if current_user.company else "—" }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Role:</p>
+        <p class="capitalize">{{ current_user.role }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Status:</p>
+        {% if current_user.is_active %}
+          <span class="text-green-700 bg-green-100 px-2 py-1 rounded text-sm">Active</span>
+        {% else %}
+          <span class="text-red-700 bg-red-100 px-2 py-1 rounded text-sm">Not active</span>
+        {% endif %}
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Joined:</p>
+        <p>{{ current_user.created_at.strftime('%Y-%m-%d') }}</p>
+      </div>
     </div>
 
-    <div class="flex justify-end space-x-3 mt-6">
-      <button type="submit" class="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700">
-        Update Profile
-      </button>
+    <!-- Edit Profile Button -->
+    <div class="absolute bottom-4 right-4">
+      <a href="{{ url_for('main.edit_profile') }}"
+         class="inline-flex items-center px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+        </svg>
+        Edit
+      </a>
     </div>
-  </form>
+  </div>
 </div>
 {% endblock %}

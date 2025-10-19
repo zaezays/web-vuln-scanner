@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-4">
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">Activity Log</h2>
+
+  <!-- Updated Table Design -->
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="w-full text-sm text-left text-gray-700">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+        <tr>
+          <th scope="col" class="px-6 py-3">Profile</th>
+          <th scope="col" class="px-6 py-3">User</th>
+          <th scope="col" class="px-6 py-3">Company</th>
+          <th scope="col" class="px-6 py-3">Status</th>
+          <th scope="col" class="px-6 py-3">Action</th>
+          <th scope="col" class="px-6 py-3">Details</th>
+          <th scope="col" class="px-6 py-3">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr class="bg-white border-b hover:bg-gray-100">
+          <td class="px-6 py-4">
+            <img src="{{ url_for('static', filename='uploads/' ~ log.user.profile_picture) if log.user.profile_picture else url_for('static', filename='images/default-avatar.png') }}"
+                 alt="Avatar"
+                 class="w-10 h-10 rounded-full object-cover border border-gray-300">
+          </td>
+          <td class="px-6 py-4">
+            <div class="font-semibold text-gray-900">{{ log.user.username }}</div>
+            <div class="text-sm text-gray-500">{{ log.user.email }}</div>
+          </td>
+          <td class="px-6 py-4">{{ log.user.company.name if log.user.company else '—' }}</td>
+          <td class="px-6 py-4">
+            {% if log.user.is_active %}
+              <span class="text-green-700 bg-green-100 px-2 py-1 rounded text-sm">Active</span>
+            {% else %}
+              <span class="text-red-700 bg-red-100 px-2 py-1 rounded text-sm">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 capitalize text-gray-800">{{ log.action }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ log.details or '—' }}</td>
+          <td class="px-6 py-4 text-sm text-gray-500">{{ log.local_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center py-4 text-gray-500 bg-white">No activity logs found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ✅ Pagination (White Style) -->
+  {% if page_numbers %}
+  <nav aria-label="Activity pagination" class="mt-6 flex justify-center">
+    <ul class="inline-flex -space-x-px text-sm h-10">
+      {% if prev_page %}
+      <li>
+        <a href="{{ url_for('main.activity_log', page=prev_page) }}"
+           class="flex items-center justify-center px-4 h-10 text-gray-600 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-800">
+          ‹
+        </a>
+      </li>
+      {% endif %}
+
+      {% for p in page_numbers %}
+        {% if p %}
+          {% if p == current_page %}
+          <li>
+            <a aria-current="page"
+               class="flex items-center justify-center px-4 h-10 text-blue-600 bg-white border border-blue-400 font-medium rounded hover:bg-blue-50">
+              {{ p }}
+            </a>
+          </li>
+          {% else %}
+          <li>
+            <a href="{{ url_for('main.activity_log', page=p) }}"
+               class="flex items-center justify-center px-4 h-10 text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-800">
+              {{ p }}
+            </a>
+          </li>
+          {% endif %}
+        {% else %}
+          <li>
+            <span class="flex items-center justify-center px-4 h-10 text-gray-500 bg-white border border-gray-300">…</span>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if next_page %}
+      <li>
+        <a href="{{ url_for('main.activity_log', page=next_page) }}"
+           class="flex items-center justify-center px-4 h-10 text-gray-600 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-800">
+          ›
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}
+
+
+

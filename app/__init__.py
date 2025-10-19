@@ -5,11 +5,14 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_wtf import CSRFProtect
+from flask_login import current_user
+
 
 csrf = CSRFProtect()
 db = SQLAlchemy()
 login_manager = LoginManager()
 mail = Mail()
+
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
@@ -25,6 +28,9 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your-secret-key'
+    
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     # Email configuration
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -44,7 +50,7 @@ def create_app():
     login_manager.login_view = 'main.login'
 
     # ---- Models ----
-    from .models import User
+    from .models import User, Notification
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -53,7 +59,29 @@ def create_app():
     # ---- Blueprints ----
     from .routes import main
     app.register_blueprint(main)
+    
+    
+    @app.context_processor
+    def inject_notifications():
+        from flask_login import current_user, AnonymousUserMixin
 
+        try:
+            if hasattr(current_user, "is_authenticated") and current_user.is_authenticated:
+                latest_notifs = (
+                    Notification.query
+                    .filter_by(recipient_id=current_user.id)
+                    .order_by(Notification.created_at.desc())
+                    .limit(6)
+                    .all()
+                )
+            else:
+                latest_notifs = []
+        except Exception:
+            latest_notifs = []
+
+        return dict(latest_notifs=latest_notifs)
+    
     return app
+
 
 

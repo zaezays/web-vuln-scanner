@@ -2,79 +2,139 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>VulnScanner</title>
+  <title>WitzCore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tailwind CSS + Flowbite (via CDN) -->
   <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- ✅ Force Light Mode -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+    document.documentElement.classList.remove('dark');
+  </script>
+
+  <!-- ✅ Custom Styles for Vuln Cards -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
   <!-- Favicon (Optional) -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
-<body class="bg-gray-100 dark:bg-gray-900">
+<body class="bg-gray-100">
 
-  <!-- Navbar -->
-  <nav class="fixed top-0 z-50 w-full bg-gray-800 border-b border-gray-700">
+  <!-- ✅ Navbar (Dark with high contrast) -->
+  <nav class="fixed top-0 z-50 w-full bg-gray-900 border-b border-gray-800 shadow-sm text-gray-200">
     <div class="px-4 py-3 flex justify-between items-center">
       <!-- Left: Brand + Sidebar toggle -->
       <div class="flex items-center gap-3">
         <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" type="button"
-                class="sm:hidden text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-600">
+                class="sm:hidden text-gray-300 hover:text-cyan-400 focus:outline-none focus:ring-2 focus:ring-gray-700">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd"
                   d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z"
                   clip-rule="evenodd"/>
           </svg>
         </button>
-        <a href="{{ url_for('main.dashboard') }}" class="text-white font-bold text-xl">VulnScanner</a>
+        <a href="{{ url_for('main.dashboard') }}" class="text-white font-bold text-xl">WitzCore</a>
       </div>
 
       <!-- Right: Notification + Profile -->
       {% if current_user.is_authenticated %}
       <div class="flex items-center gap-4">
         <!-- Notifications -->
-        <button type="button" id="notificationToggle"
-                class="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-600">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
-          </svg>
-        </button>
+         <button type="button" id="notificationToggle"
+         class="relative inline-flex items-center p-3 text-sm font-medium text-center text-white bg-gray-800 rounded-lg hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-blue-300">
+         <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+        </svg>
+        <span class="sr-only">Notifications</span>
+        <!-- 🔴 Red badge counter -->
+         {% if unread_count > 0 %}
+         <div id="notifBadge"
+         class="absolute inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-1 -right-1 dark:border-gray-900">
+         {{ unread_count }}
+        </div>
+        {% endif %}
+      </button>
+
 
         <!-- Notification Dropdown -->
-        <div id="notificationDropdown" class="hidden z-50 w-80 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600 absolute top-16 right-20">
-          <div class="px-4 py-3 font-medium text-gray-900 dark:text-white">Notifications</div>
-          <ul class="max-h-64 overflow-y-auto">
-            <li class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">New scan completed successfully</li>
-            <li class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">New user registered: izzhamkl</li>
-          </ul>
-          <a href="{{ url_for('main.notifications') }}" class="block px-4 py-2 text-center text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
-        </div>
+<div id="notificationDropdown"
+     class="hidden z-50 w-80 bg-gray-800 divide-y divide-gray-700 rounded-lg shadow absolute top-16 right-20">
+  <div class="px-4 py-3 font-medium text-white">Notifications</div>
+  <ul class="max-h-64 overflow-y-auto">
+    {% if latest_notifs %}
+      {% for n in latest_notifs %}
+      <li>
+        <a href="{{ url_for('main.mark_notification_read', notif_id=n.id) }}"
+           class="block px-4 py-2 text-sm hover:bg-gray-700
+                  {% if not n.is_read %}text-white font-semibold{% else %}text-gray-400{% endif %}">
+          <span>{{ n.message }}</span><br>
+          <span class="text-xs text-gray-500">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    {% else %}
+      <li class="px-4 py-2 text-sm text-gray-400 text-center">No notifications yet</li>
+    {% endif %}
+  </ul>
+  <a href="{{ url_for('main.notifications') }}"
+     class="block px-4 py-2 text-center text-sm text-cyan-400 hover:underline">View all</a>
+</div>
 
-        <!-- Profile Dropdown Trigger -->
-        <button id="profileToggle" type="button" class="flex items-center text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-600">
-          <span class="sr-only">Open user menu</span>
-          <img class="w-8 h-8 rounded-full object-cover" 
-               src="{% if current_user.profile_picture %}
-                      {{ url_for('static', filename='uploads/' + current_user.profile_picture) }}
-                    {% else %}
-                      {{ url_for('static', filename='images/default-avatar.png') }}
-                    {% endif %}" 
-               alt="{{ current_user.username }}'s profile picture" />
-        </button>
+<!-- Profile Dropdown Trigger -->
+<button id="profileToggle" type="button"
+        class="flex items-center text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-700">
+  <span class="sr-only">Open user menu</span>
+  <img class="w-8 h-8 rounded-full object-cover"
+       src="{% if current_user.profile_picture %}
+              {{ url_for('static', filename='uploads/' + current_user.profile_picture) }}
+            {% else %}
+              {{ url_for('static', filename='images/default-avatar.png') }}
+            {% endif %}"
+       alt="{{ current_user.username }}'s profile picture" />
+</button>
 
         <!-- Profile Dropdown -->
-        <div id="profileDropdown" class="hidden z-50 w-56 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600 absolute top-16 right-4">
+        <div id="profileDropdown" class="hidden z-50 w-56 text-base list-none bg-gray-800 divide-y divide-gray-700 rounded-lg shadow absolute top-16 right-4">
           <div class="px-4 py-3">
-            <span class="block text-sm font-medium text-gray-900 dark:text-white">{{ current_user.username }}</span>
-            <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ current_user.email }}</span>
+            <span class="block text-sm font-medium text-white">{{ current_user.username }}</span>
+            <span class="block text-sm text-gray-400 truncate">{{ current_user.email }}</span>
           </div>
-          <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><a href="{{ url_for('main.profile') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My profile</a></li>
-            <li><a href="{{ url_for('main.settings') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</a></li>
+          <ul class="py-1 text-sm text-gray-300">
+            <li>
+              <a href="{{ url_for('main.profile') }}"
+                 class="flex items-center px-4 py-2 hover:bg-gray-700 hover:text-cyan-400">
+                <svg class="w-6 h-6 me-2 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd"
+                        d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"
+                        clip-rule="evenodd"/>
+                </svg>
+                My profile
+              </a>
+            </li>
+            <li>
+              <a href="{{ url_for('main.settings') }}"
+                 class="flex items-center px-4 py-2 hover:bg-gray-700 hover:text-cyan-400">
+                <svg class="w-6 h-6 me-2 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M17 10v1.126c.367.095.714.24 1.032.428l.796-.797 1.415 1.415-.797.796c.188.318.333.665.428 1.032H21v2h-1.126c-.095.367-.24.714-.428 1.032l.797.796-1.415 1.415-.796-.797a3.979 3.979 0 0 1-1.032.428V20h-2v-1.126a3.977 3.977 0 0 1-1.032-.428l-.796.797-1.415-1.415.797-.796A3.975 3.975 0 0 1 12.126 16H11v-2h1.126c.095-.367.24-.714.428-1.032l-.797-.796 1.415-1.415.796.797A3.977 3.977 0 0 1 15 11.126V10h2Z" clip-rule="evenodd"/>
+                </svg>
+                Settings
+              </a>
+            </li>
           </ul>
           <div class="py-1">
-            <a href="{{ url_for('main.logout') }}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Logout</a>
+            <a href="{{ url_for('main.logout') }}"
+               class="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-gray-700">
+              <svg class="w-6 h-6 me-2" fill="none" stroke="currentColor" stroke-linecap="round"
+                   stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 12H8m12 0-4 4m4-4-4-4M9 4H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h2"/>
+              </svg>
+              Logout
+            </a>
           </div>
         </div>
       </div>
@@ -85,15 +145,15 @@
   <!-- Sidebar -->
   {% include 'sidebar.html' %}
 
-  <!-- Main content area -->
-  <div class="p-4 sm:ml-64">
-    <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+  <!-- ✅ Unified white main background -->
+   <div class="p-6 sm:ml-64 bg-gray-100 min-h-screen">
+  <div class="mt-14">
 
       <!-- Flash messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
-            <div class="p-3 mb-3 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+            <div class="p-3 mb-3 rounded bg-green-100 text-green-800">
               {{ message }}
             </div>
           {% endfor %}
@@ -138,7 +198,16 @@
       });
     });
   </script>
+
+  <style>
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fade-in 0.3s ease-out; }
+  </style>
 </body>
 </html>
+
 
 

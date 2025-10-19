@@ -1,48 +1,43 @@
-{% extends "base.html" %} 
-{% block content %} 
-<div class="container mt-4"> 
-  <h2>🔍 Scan a Website</h2>
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto mt-12 px-4">
 
-  <!-- Flash messages --> 
-   {% with messages = get_flashed_messages(with_categories=true) %} 
-   {% if messages %} {% for category, message in messages %} 
-   <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-    {{ message }} 
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"> </button> 
-  </div> 
-  {% endfor %} 
-  {% endif %} 
-  {% endwith %}
+  <!-- Scan Input / Options Panel -->
+  <div class="bg-gray-900 shadow-lg rounded-lg p-8">
+    <h1 class="text-3xl font-semibold text-white mb-6">Start a New Security Scan</h1>
+    <form method="POST" action="{{ url_for('main.scan_page') }}" class="space-y-6">
+      {{ form.hidden_tag() }}
 
-  <!-- Scan form --> 
-   <form method="POST" action="{{ url_for('main.scan_page') }}"> 
-    {{ form.hidden_tag() }}
-      <!-- CSRF protection --> 
-      
-    <div class="mb-3">
-      {{ form.url.label(class="form-label") }}
-      {{ form.url(class="form-control", placeholder="http://example.com") }}
-    </div>
-    <button type="submit" class="btn btn-primary">Start Scan</button> 
-  </form>
+      <!-- URL Input -->
+      <div>
+        {{ form.url(class="w-full px-4 py-2 bg-gray-800 border border-gray-700 text-white rounded-md focus:ring-2 focus:ring-blue-500",
+                    placeholder="https://example.com") }}
+      </div>
 
-  <!-- Results --> 
-   {% if scan_result %} 
-   <hr> <h4>Results for <code>{{ target_url }}</code></h4> 
-   {% if scan_result|length == 0 %} 
-   <div class="alert alert-success">✅ No vulnerabilities found.</div> 
-   {% else %} 
-   <ul class="list-group mt-3"> 
-    {% for alert in scan_result %} 
-    <li class="list-group-item"> 
-      <h5 class="text-danger">{{ alert.alert }}</h5> 
-      <p><strong>Risk:</strong> {{ alert.risk }}</p> 
-      <p><strong>Description:</strong> {{ alert.description }}</p> 
-      <p><strong>Solution:</strong> {{ alert.solution }}</p> 
-    </li> 
-    {% endfor %} 
-  </ul> 
-  {% endif %} 
-  {% endif %} 
-</div> 
+      <!-- Intensity / Strength -->
+      <div>
+        {{ form.intensity.label(class="block text-sm font-medium text-gray-300 mb-1") }}
+        {{ form.intensity(class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:ring-2 focus:ring-blue-500") }}
+      </div>
+
+      <!-- Threshold -->
+      <div>
+        {{ form.threshold.label(class="block text-sm font-medium text-gray-300 mb-1") }}
+        {{ form.threshold(class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:ring-2 focus:ring-blue-500") }}
+      </div>
+
+      <div class="text-right">
+        <button type="submit"
+                class="inline-flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Scan</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
+
+

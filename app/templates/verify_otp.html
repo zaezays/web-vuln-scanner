@@ -1,76 +1,127 @@
-{# templates/verify_otp.html #}
 {% extends "auth_base.html" %}
 
 {% block content %}
-<section class="min-h-screen flex items-center justify-center bg-gray-900">
-  <div class="w-full max-w-md bg-white rounded-xl shadow-xl p-8">
+<section class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+  <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+      <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+          Witzcore   
+      </a>
 
-    <h2 class="text-2xl font-bold mb-4 text-center text-gray-900">OTP Verification</h2>
-    <p class="text-center text-sm text-gray-600 mb-6">
-      OTP sent to <strong>{{ email }}</strong><br>
-      Enter the code below.
-    </p>
+      <div class="w-full bg-white rounded-lg shadow dark:border sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+          <div class="p-6 space-y-6 sm:p-8">
+              <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white text-center">
+                  OTP Verification
+              </h1>
+              <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+                  OTP sent to <strong>{{ email }}</strong><br>
+                  Enter the code below.
+              </p>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="mb-4 px-4 py-2 rounded text-sm text-white {{ 'bg-green-600' if category=='success' else 'bg-red-600' }}">
-            {{ message }}
+              <!-- Flash messages -->
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="text-sm text-white px-4 py-2 rounded text-center {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }}">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+
+              <!-- OTP Form -->
+              <form method="POST" action="{{ url_for('main.verify_otp_route') }}" id="otp-form" class="space-y-5">
+                  {{ form.hidden_tag() }}
+
+                  <!-- OTP Inputs -->
+                  <div class="flex justify-center gap-2 mb-3 otp-inputs">
+                      {% for i in range(6) %}
+                      <input maxlength="1" required type="text" pattern="\d*" inputmode="numeric"
+                            class="w-12 h-12 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                            data-index="{{ i }}" />
+                      {% endfor %}
+                  </div>
+
+                  {{ form.otp_code(type="hidden", id="otp_code_combined") }}
+
+                  <!-- Resend OTP -->
+                  <div class="text-center text-sm text-gray-600 dark:text-gray-400">
+                      Didn’t get the code? 
+                      <button type="button" id="resend-btn" 
+                              class="text-blue-600 font-medium hover:underline disabled:opacity-50"
+                              disabled>Resend OTP (10s)</button>
+                  </div>
+
+                  <!-- Verify Button -->
+                  <button type="submit"
+                          class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                      Verify OTP
+                  </button>
+              </form>
           </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <form method="POST" action="{{ url_for('main.verify_otp_route') }}" id="otp-form">
-      {{ form.hidden_tag() }}
-
-      <div class="flex gap-2 justify-center mb-4 otp-inputs">
-        {% for i in range(6) %}
-        <input maxlength="1" required type="text" pattern="\d*" inputmode="numeric"
-               class="w-12 h-12 text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-               data-index="{{ i }}" />
-        {% endfor %}
       </div>
-
-      {{ form.otp_code(type="hidden", id="otp_code_combined") }}
-
-      <button type="submit"
-              class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
-        Verify OTP
-      </button>
-    </form>
-
   </div>
 </section>
 
+<!-- JS -->
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const otpForm = document.getElementById('otp-form');
-    const inputs = document.querySelectorAll('.otp-inputs input');
-    const hiddenInput = document.getElementById('otp_code_combined');
+document.addEventListener('DOMContentLoaded', function() {
+  const otpForm = document.getElementById('otp-form');
+  const inputs = document.querySelectorAll('.otp-inputs input');
+  const hiddenInput = document.getElementById('otp_code_combined');
+  const resendBtn = document.getElementById('resend-btn');
 
-    inputs.forEach((input, idx) => {
-      input.addEventListener('input', () => {
-        if (input.value.length === 1 && idx < inputs.length - 1) {
-          inputs[idx + 1].focus();
-        }
-      });
-
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && input.value === '' && idx > 0) {
-          inputs[idx - 1].focus();
-        }
-      });
+  // OTP input auto move
+  inputs.forEach((input, idx) => {
+    input.addEventListener('input', () => {
+      if (input.value.length === 1 && idx < inputs.length - 1) {
+        inputs[idx + 1].focus();
+      }
     });
-
-    otpForm.addEventListener('submit', function(e) {
-      let otp = '';
-      inputs.forEach(i => otp += i.value);
-      hiddenInput.value = otp;
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && input.value === '' && idx > 0) {
+        inputs[idx - 1].focus();
+      }
     });
   });
+
+  // Combine OTP
+  otpForm.addEventListener('submit', function(e) {
+    let otp = '';
+    inputs.forEach(i => otp += i.value);
+    hiddenInput.value = otp;
+  });
+
+  // Countdown resend button
+  let countdown = 10;
+  const timer = setInterval(() => {
+    countdown--;
+    resendBtn.textContent = countdown > 0 ? `Resend OTP (${countdown}s)` : "Resend OTP";
+    if (countdown <= 0) {
+      clearInterval(timer);
+      resendBtn.disabled = false;
+    }
+  }, 1000);
+
+  // Resend OTP AJAX
+  resendBtn.addEventListener('click', () => {
+    resendBtn.disabled = true;
+    resendBtn.textContent = "Sending...";
+    fetch("{{ url_for('main.resend_otp') }}", { method: "POST" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          resendBtn.textContent = "New OTP sent!";
+          resendBtn.style.color = "green";
+        } else {
+          resendBtn.textContent = "Failed. Try again.";
+        }
+      })
+      .catch(() => resendBtn.textContent = "Error!");
+  });
+});
 </script>
 {% endblock %}
+
 
 
 
