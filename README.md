@@ -1,8 +1,8 @@
-WitzCore – Web Vulnerability Scanner (DAST-Based)
+*WitzCore – Web Vulnerability Scanner (DAST-Based)*
 
 WitzCore is a Dynamic Application Security Testing (DAST) web vulnerability scanner designed to help users identify security weaknesses in their websites. It combines OWASP ZAP, Nikto, and a custom-built Flask application to provide real-time scanning, vulnerability reporting, notification alerts, and role-based user management.
 
-📌 Project Demo Video
+*📌 Project Demo Video*
 
 Experience the full walkthrough of the WitzCore Web Vulnerability Scanner in this demo video:
 
