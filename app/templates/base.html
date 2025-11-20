@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- ✅ Force Light Mode -->
+  
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -17,7 +17,7 @@
     document.documentElement.classList.remove('dark');
   </script>
 
-  <!-- ✅ Custom Styles for Vuln Cards -->
+
    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
   <!-- Favicon (Optional) -->
@@ -25,7 +25,7 @@
 </head>
 <body class="bg-gray-100">
 
-  <!-- ✅ Navbar (Dark with high contrast) -->
+
   <nav class="fixed top-0 z-50 w-full bg-gray-900 border-b border-gray-800 shadow-sm text-gray-200">
     <div class="px-4 py-3 flex justify-between items-center">
       <!-- Left: Brand + Sidebar toggle -->
@@ -51,7 +51,7 @@
           <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
         </svg>
         <span class="sr-only">Notifications</span>
-        <!-- 🔴 Red badge counter -->
+      
          {% if unread_count > 0 %}
          <div id="notifBadge"
          class="absolute inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-1 -right-1 dark:border-gray-900">
@@ -145,7 +145,7 @@
   <!-- Sidebar -->
   {% include 'sidebar.html' %}
 
-  <!-- ✅ Unified white main background -->
+
    <div class="p-6 sm:ml-64 bg-gray-100 min-h-screen">
   <div class="mt-14">
 
