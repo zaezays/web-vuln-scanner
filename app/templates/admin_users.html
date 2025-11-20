@@ -3,13 +3,13 @@
 {% block content %}
 <div class="container mx-auto mt-4">
 
-  <!-- ✅ Title styled with teal background -->
+ 
   <h2 class="text-2xl font-bold text-gray-800 mb-4"> User Management</h2>
     
   <!-- Filter + Add button -->
   <div class="flex flex-col sm:flex-row justify-between mb-4 items-start sm:items-center gap-4">
     <form method="GET" action="{{ url_for('main.user_management') }}" class="flex gap-3">
-      <!-- ✅ Updated company filter box style -->
+  
       <select name="company_id" onchange="this.form.submit()"
               class="w-full sm:w-64 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-gray-800 shadow-sm">
         <option value="">Company Filter</option>
@@ -39,7 +39,7 @@
     Showing {{ users_start }} - {{ users_end }} of {{ total_users }} users
   </p>
 
-  <!-- ✅ Light Table Design -->
+
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg bg-white border border-gray-200">
     <table class="w-full text-sm text-left text-gray-700">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
@@ -95,7 +95,7 @@
               </svg>
             </a>
 
-            <!-- ✅ Delete with modal confirmation -->
+         
             <button data-modal-target="deleteModal-{{ user.id }}" data-modal-toggle="deleteModal-{{ user.id }}"
                     title="Delete" class="text-red-500 hover:text-red-700">
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@
     </table>
   </div>
 
-  <!-- ✅ Pagination matches sample -->
+
   {% if page_numbers %}
   <nav aria-label="Pagination" class="mt-6 flex justify-center">
     <ul class="inline-flex items-center -space-x-px">
