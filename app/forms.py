@@ -57,7 +57,7 @@ class ScanForm(FlaskForm):
     url = StringField('Target URL', validators=[DataRequired(), URL()])
 
     
-    # ✅ NEW: Intensity level (Active scan strength)
+   
     intensity = SelectField(
         'Attack Strength',
         choices=[
@@ -69,7 +69,7 @@ class ScanForm(FlaskForm):
         default='MEDIUM'
     )
 
-    # ✅ NEW: Threshold level (alert sensitivity)
+  
     threshold = SelectField(
         'Alert Threshold',
         choices=[
