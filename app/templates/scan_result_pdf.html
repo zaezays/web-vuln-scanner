@@ -26,7 +26,7 @@
 </head>
 <body>
 
-<!-- 🟩 NEW STRUCTURED PDF LAYOUT -->
+
 <h1>Security Scan Report</h1>
 <p><strong>Target:</strong> {{ scan.target_url }}</p>
 <p><strong>Generated at:</strong> {{ scan.completed_at or "" }}</p>
@@ -94,7 +94,7 @@
   <p>No vulnerabilities found in this scan.</p>
 {% endif %}
 
-<!-- 🟩 NEW SECTION: Nikto / Server Findings (for PDF) -->
+
 {% if scan.server_vulnerabilities and scan.server_vulnerabilities|length > 0 %}
 <div class="divider"></div>
 <h2>Server & Nikto Findings</h2>
@@ -138,7 +138,7 @@
 </div>
 {% endif %}
 {% endif %}
-<!-- 🟩 END NEW STRUCTURED PDF LAYOUT -->
+
 
 </body>
 </html>
