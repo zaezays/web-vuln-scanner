@@ -202,7 +202,7 @@ def verify_otp_route():
     return render_template('verify_otp.html', form=form, email=email)
 
 @main.route('/resend-otp', methods=['POST'])
-@csrf_exempt   # ✅ This disables CSRF for this endpoint only
+@csrf_exempt   
 def resend_otp():
     from flask import jsonify
     email = session.get('otp_user_email')
@@ -245,7 +245,7 @@ def logout():
 def dashboard():
     malaysia_tz = pytz.timezone('Asia/Kuala_Lumpur')
 
-    # 🟩 For Admin/Superadmin: full visibility
+
     if current_user.role in ['admin', 'superadmin']:
         total_scans = Scan.query.count()
         completed_scans = Scan.query.filter_by(status='completed').count()
@@ -256,7 +256,7 @@ def dashboard():
         vulns = Vulnerability.query.all()
         dashboard_view = "admin"  # identify view mode
 
-    # 🟩 For Normal Users: only their company data
+    
     else:
         total_scans = (
             Scan.query.join(User, Scan.user_id == User.id)
@@ -387,7 +387,7 @@ def dashboard():
     return render_template(
         'dashboard.html',
         user=current_user,
-        dashboard_view=dashboard_view,   # 🟩 pass view type to HTML
+        dashboard_view=dashboard_view,   
         total_scans=total_scans,
         completed_scans=completed_scans,
         total_companies=total_companies,
@@ -438,7 +438,7 @@ def scan_page():
     if form.validate_on_submit():
         target_url = form.url.data.strip()
 
-        # 🟩 Always perform full scan — no need for scan_type selection
+        
         scan_type = "full"
 
         if not target_url:
@@ -448,7 +448,7 @@ def scan_page():
         threshold = request.form.get('threshold')
         strength = request.form.get('intensity')
 
-        # 🟩 Force full ZAP scanning options (disable user toggles)
+        
         use_spider = True
         use_ajax_spider = True
         use_auth = False
@@ -460,21 +460,21 @@ def scan_page():
             user_id=current_user.id,
             target_url=target_url,
             domain=target_url.split('/')[2] if '//' in target_url else target_url,
-            scan_type=scan_type,  # 🟩 always "full"
+            scan_type=scan_type, 
             status='in_progress',
             started_at=datetime.utcnow()
         )
         db.session.add(scan)
         db.session.commit()
         
-        # 🟩 Added Notification: Scan started
+        
         create_notification(
             recipient_id=current_user.id,
             message=f"Scan started for {target_url}",
             notif_type="scan_start"
         )
 
-        # 🟩 Trigger Celery background task (instead of threading)
+    
         run_full_scan_task.delay(
             scan.id,
             target_url,
@@ -504,7 +504,7 @@ def view_scan_result(scan_id):
 
     vulns = Vulnerability.query.filter_by(scan_id=scan.id).all()
 
-    # 🟩 NEW: Load ServerVulnerability (Nikto results)
+   
     from app.models import ServerVulnerability
     server_vulns = ServerVulnerability.query.filter_by(scan_id=scan.id).all()
 
@@ -525,14 +525,14 @@ def view_scan_result(scan_id):
             scan.completed_at = pytz.utc.localize(scan.completed_at)
         scan.completed_at = scan.completed_at.astimezone(malaysia_tz)
     
-    # 🟩 Calculate average response time (in milliseconds)
+    
     if vulns and hasattr(vulns[0], 'response_time'):
         response_times = [v.response_time for v in vulns if v.response_time]
         avg_response_time = sum(response_times) / len(response_times) if response_times else 0
     else:
         avg_response_time = 0
 
-    # 🟩 Pass server_vulns to template
+  
     return render_template(
         'scan_result.html',
         scan=scan,
@@ -570,7 +570,7 @@ def scan_website_api():
     db.session.add(scan)
     db.session.commit()
 
-    # ✅ Normalize your custom_alerts keys (strip spaces)
+ 
     normalized_customs = {k.strip(): v for k, v in CUSTOM_ALERTS.items()}
 
     for alert in alerts:
@@ -589,16 +589,16 @@ def scan_website_api():
             or "No recommendation provided"
         )
 
-        # ✅ Apply your custom text if the pluginId exists in custom_alerts.py
+
         if plugin_id in normalized_customs:
             custom = normalized_customs[plugin_id]
             if custom.get('description'):  # lowercase fixed
                 description = custom['description']
             if custom.get('recommendation'):  # lowercase fixed
                 recommendation = custom['recommendation']
-            current_app.logger.info(f"✅ Custom text applied for Plugin ID {plugin_id}: {alert.get('alert')}")
+            current_app.logger.info(f"Custom text applied for Plugin ID {plugin_id}: {alert.get('alert')}")
         else:
-            current_app.logger.info(f"⚠️ Using default ZAP text for Plugin ID {plugin_id}: {alert.get('alert')}")
+            current_app.logger.info(f"Using default ZAP text for Plugin ID {plugin_id}: {alert.get('alert')}")
 
         vuln = Vulnerability(
             scan_id=scan.id,
@@ -632,11 +632,11 @@ def scan_website_api():
 @main.route('/scanning-history')
 @login_required
 def scanning_history():
-      # 🟩 Pagination setup
+     
     page = request.args.get('page', 1, type=int)
     per_page = 10
 
-    # 🟩 Query all scans by current user (most recent first)
+   
     pagination = (
         Scan.query.filter_by(user_id=current_user.id)
         .order_by(Scan.created_at.desc())
@@ -644,7 +644,7 @@ def scanning_history():
     )
     scans = pagination.items
     
-    # 👉 Convert started_at to Malaysia time for display and compute duration
+    
     malaysia_tz = pytz.timezone('Asia/Kuala_Lumpur')
     for s in scans:
         # started_at -> started_local (Asia/Kuala_Lumpur)
@@ -656,11 +656,9 @@ def scanning_history():
         else:
             s.started_local = None
 
-        # also provide a ready duration (unchanged semantics)
+        
         s.duration_display = (s.completed_at - s.started_at) if (s.completed_at and s.started_at) else None
-    # 👆 end added block
-
-    # 🟩 Ensure started_at and completed_at exist (avoid template errors)
+    
     for s in scans:
         if not s.started_at:
             s.started_at = None
@@ -723,7 +721,7 @@ def export_scan_pdf(scan_id):
     pdf = HTML(string=rendered).write_pdf()
 
     try:
-        # 🟩 Added Notification: Successful PDF download
+        
         notif = Notification(
             sender_id=current_user.id,
             recipient_id=current_user.id,
@@ -743,7 +741,7 @@ def export_scan_pdf(scan_id):
             mimetype='application/pdf'
         )
     except Exception as e:
-        # 🟩 Added Notification: Failed PDF download
+        
         notif_fail = Notification(
             sender_id=current_user.id,
             recipient_id=current_user.id,
@@ -779,7 +777,7 @@ def vuln_stats(scan_id):
 def deep_scan_request(scan_id):
     scan = Scan.query.get_or_404(scan_id)
 
-    # ✅ 1. Generate PDF automatically (same as manual export)
+  
     rendered = render_template(
         'scan_result_pdf.html',
         scan=scan,
@@ -787,14 +785,13 @@ def deep_scan_request(scan_id):
     )
     pdf_data = HTML(string=rendered).write_pdf()
 
-    # ✅ 2. Save PDF temporarily
     reports_dir = os.path.join(current_app.root_path, 'static', 'reports')
     os.makedirs(reports_dir, exist_ok=True)
     pdf_path = os.path.join(reports_dir, f'scan_{scan.id}.pdf')
     with open(pdf_path, 'wb') as f:
         f.write(pdf_data)
 
-    # ✅ 3. Prepare email (To Admin + CC current user)
+  
     msg = Message(
         subject=f"Deep Scan Request - {scan.target_url}",
         sender=current_app.config['MAIL_DEFAULT_SENDER'],
@@ -802,7 +799,7 @@ def deep_scan_request(scan_id):
         cc=[current_user.email]
     )
 
-    # ✅ 4. HTML email body
+  
     msg.html = f"""
     <div style="font-family: Arial, sans-serif; color: #333;">
       <p>Hello <strong>Admin</strong>,</p>
@@ -821,21 +818,21 @@ def deep_scan_request(scan_id):
     </div>
     """
 
-    # ✅ 5. Attach PDF
+
     with current_app.open_resource(pdf_path) as pdf:
         msg.attach(f"scan_{scan.id}.pdf", "application/pdf", pdf.read())
 
-    # ✅ 6. Send asynchronously
+ 
     Thread(target=send_async_email, args=(current_app._get_current_object(), msg)).start()
 
-    # ✅ 7. Log this action in Activity Log
+   
     log_user_action(
         current_user.id,
         "Deep Scan Request",
         f"User requested deep scan for {scan.target_url} (Scan ID: {scan.id})"
     )
 
-    # 🟩🟩🟩 NEW SECTION ADDED HERE 🟩🟩🟩
+
     try:
         dsr = DeepScanRequest(
             scan_id=scan.id,
@@ -852,7 +849,7 @@ def deep_scan_request(scan_id):
             )
         db.session.add(user_notif)
         
-            # ✅ Notify all admins
+    
         admins = User.query.filter(User.role.in_(['admin', 'superadmin'])).all()
         for admin in admins:
             admin_notif = Notification(
@@ -867,16 +864,16 @@ def deep_scan_request(scan_id):
             
     except Exception as e:
         current_app.logger.warning(f"[DeepScanRequest] Failed to create record or notification: {e}")
-         # 🟩🟩🟩 END OF NEW SECTION 🟩🟩🟩
+       
 
 
-    # ✅ 8. Clean up temp file
+  
     try:
         os.remove(pdf_path)
     except Exception as e:
         current_app.logger.warning(f"Could not delete temp PDF: {e}")
 
-    # ✅ 9. Open Gmail compose for confirmation
+ 
     gmail_link = (
         f"mailto:netwebzmin25@gmail.com"
         f"?subject=Deep%20Scan%20Request%20-%20{scan.target_url}"
@@ -928,7 +925,7 @@ def reply_deep_scan_request(request_id):
         dsr.responded_at = datetime.utcnow()
         db.session.commit()
         
-        # ✅ Send notifications after admin completes the deep scan
+       
         try:
             if dsr.user_id:
                 user_notif = Notification(
@@ -972,14 +969,14 @@ def delete_deep_scan_request(request_id):
         db.session.delete(dsr)
         db.session.commit()
 
-        # ✅ Optional: log the deletion
+    
         log_user_action(
             current_user.id,
             "Delete Deep Scan Request",
             f"Admin deleted deep scan request ID {request_id} for {dsr.scan.target_url if dsr.scan else 'Unknown URL'}"
         )
 
-        # ✅ Optional: notify the user whose request was deleted
+      
         if dsr.user_id:
             notif = Notification(
                 sender_id=current_user.id,
