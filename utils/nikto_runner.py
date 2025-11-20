@@ -7,7 +7,7 @@ import os
 from typing import Dict, Any, List
 
 
-# 🟩 Categorize Nikto findings based on keywords
+
 def categorize_finding(desc: str) -> str:
     desc_lower = desc.lower()
 
@@ -28,7 +28,7 @@ def categorize_finding(desc: str) -> str:
         return "General Finding"
 
 
-# 🟩 Parse raw Nikto text output
+
 def parse_nikto_output(text: str) -> Dict[str, Any]:
     """
     Extracts:
@@ -101,7 +101,7 @@ def parse_nikto_output(text: str) -> Dict[str, Any]:
     }
 
 
-# 🟩 Run Nikto scan (fast focused mode)
+
 def run_nikto_scan(target_url: str, timeout: int = 600, mode: str = "full") -> Dict[str, Any]:
     """
     Runs Nikto against target_url using tuned mode (-Tuning 23468c).
