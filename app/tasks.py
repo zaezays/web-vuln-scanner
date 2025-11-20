@@ -10,7 +10,7 @@ import os, traceback
 
 CUSTOM_ALERTS = RAW_CUSTOM_ALERTS
 
-# 🧩 Celery initialization
+# Celery initialization
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 celery = Celery(
     "flask_scanner",
@@ -26,13 +26,13 @@ celery.conf.update(
     enable_utc=True,
 )
 
-# 🧪 Quick test task
+# Quick test task
 @celery.task
 def test_task(name):
     print(f"[CELERY TEST] Task running for {name}")
     return f"Hello, {name}! Task executed successfully."
 
-# 🧩 Main scanning task
+# Main scanning task
 @shared_task(bind=True, name="app.tasks.run_full_scan_task")
 def run_full_scan_task(self, scan_id, target_url, scan_type,
                        threshold, strength,
