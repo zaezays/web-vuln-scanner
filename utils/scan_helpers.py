@@ -7,7 +7,7 @@ def create_notification(recipient_id, message, notif_type):
     notif = Notification(
         recipient_id=recipient_id,
         message=message,
-        type=notif_type,     # ✅ FIXED: match the actual column name
+        type=notif_type,     
         created_at=datetime.utcnow(),
         is_read=False
     )
