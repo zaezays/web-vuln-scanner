@@ -18,7 +18,7 @@
   <h2 class="text-2xl font-bold text-gray-800">Security Scan Report</h2>
 
   <div class="flex items-center space-x-3">
-    <!-- 🟦 Download PDF Button (Updated with Icon) -->
+    <!-- Download PDF Button (Updated with Icon) -->
     <a href="{{ url_for('main.export_scan_pdf', scan_id=scan.id) }}"
        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
       <!-- Download Report Icon -->
@@ -29,7 +29,7 @@
       <span>Download Report</span>
     </a>
 
-    <!-- 🟩 NEW: Deep Scan Request Button -->
+    <!-- Deep Scan Request Button -->
     <a href="{{ url_for('main.deep_scan_request', scan_id=scan.id) }}"
        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
       <!-- Send (Deep Scan Request) Icon -->
@@ -39,7 +39,7 @@
       </svg>
       <span>Deep Scan Request</span>
     </a>
-    <!-- 🟩 END NEW BUTTON -->
+  
   </div>
 </div>
 
@@ -162,7 +162,7 @@
     {% set row_id = 'vuln-' ~ loop.index %}
     <div class="grid grid-cols-12 px-5 py-3 items-start">
       <div class="col-span-6 flex items-start gap-2">
-        <!-- 🟩 DO NOT TOUCH THIS BUTTON LOGIC -->
+       
         <button type="button" class="toggle-btn mt-1 h-6 w-6 shrink-0 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center"
                 data-target="{{ row_id }}" aria-expanded="false">
           <span class="icon-plus text-black font-bold">+</span>
@@ -263,7 +263,7 @@
   <div class="p-6 mt-6 bg-green-100 text-green-800 border border-green-300 rounded-lg text-center shadow-sm">✅ No vulnerabilities found.</div>
 {% endif %}
 
-<!-- 🟩 START NEW SECTION: Nikto / Server Vulnerabilities -->
+
 {% if server_vulnerabilities and server_vulnerabilities|length > 0 %}
 <div class="mt-12">
   <h3 class="text-2xl font-bold mb-4 text-gray-900">Server Information</h3>
@@ -317,10 +317,10 @@
   {% endif %}
 </div>
 {% endif %}
-<!-- 🟩 END NEW SECTION -->
+
 </div>
 
-<!-- 🟩 FIXED: Keep only ONE toggle script -->
+
 <script>
 document.querySelectorAll('.toggle-btn').forEach(btn => {
   btn.addEventListener('click', () => {
